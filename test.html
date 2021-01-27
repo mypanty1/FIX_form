@@ -10,45 +10,34 @@
 			input[type="text"]{}
 			button[type="button"]{/*width:30px;*/height:20px;}
 				.tasks-list{display:flex;flex-direction:column;}
-					.tasks-list .task:last-child{display:none;}
 					.task{width:100%;display:grid;grid-template-columns:20% 20% 20% 20% 20%;border:1px solid #0074CA;margin:2px;}
 					.task>*{margin:3px 1px 1px 1px;}
 					.task-id{grid-area:1/1/1/3;font-family:math;}
 					.task-time{grid-area:1/3/1/6;text-align:right;font-family:math;}
 					.task-address{grid-area:2/1/2/6;}
 					.task-descr{grid-area:3/1/3/6;font-family:math;}
-					.task-login{grid-area:4/1/4/3;}
-					.task-state{grid-area:4/3/4/5;}
-					.task-save{grid-area:4/5/4/6;}
-					.task-reason{grid-area:5/1/5/6;}
+					.task-action-counters{grid-area:4/1/4/6;font-family:math;}
+					.task-login{grid-area:5/1/5/3;}
+					.task-state{grid-area:5/3/5/5;}
+					.task-save{grid-area:5/5/5/6;}
+					.task-reason{grid-area:6/1/6/6;}
 		</style>
 	</head>
 	<body>
 		<h2>Активные задачи:</h2>
-		<div class="tasks-list">
-			<!--
-			<div class="task">
-				<div class="task-id">T1611748732650_mypanty1</div><div class="task-time">20-01-2021 22:22:22</div>
-				<div class="task-address">PL_54_5061 ул.Немировича-Данченко д.144/1</div>
-				<div class="task-descr">очень очень длинный комментарий о задаче</div>
-				<select class="task-login"><option selected="" disabled="">&nbsp;</option><option value="1">nyblino1</option><option value="2">avfrants</option><option value="3">mvdenis1</option><option value="4">mypanty1</option></select>
-				<select class="task-state"><option value="1" selected="">новый</option><option value="2">в работе</option><option value="3">отклонил</option><option value="4">сделал</option></select>
-				<button class="task-save" type="button">save</button>
-				<input class="task-reason" type="text" value="" placeholder="решение">
-			</div>
-			-->
-		</div>
+		<div class="tasks-list"></div>
 		<script>
 			fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList').then(response=>response.json()).then(function(obj){
-				for(let task of obj.task_list){
+				for(let task of obj.task_list.filter(function(row){return row[10]=='new'||row[10]=='start'})){/*только активные*/
 					document.getElementsByClassName('tasks-list')[0].insertAdjacentHTML('afterBegin',`
 						<div class="task">
 							<div class="task-id">`+task[0]+`</div><div class="task-time">`+(new Date(task[1]).toLocaleString())+`</div>
 							<div class="task-address">`+task[4]+` `+task[3]+`</div>
 							<div class="task-descr">`+task[6]+`</div>
-							<select class="task-login"><option selected disabled>&nbsp;</option><option value="1">nyblino1</option><option value="2">avfrants</option><option value="3">mvdenis1</option><option value="4">mypanty1</option></select>
-							<select class="task-state"><option value="1" selected>новый</option><option value="2">в работе</option><option value="3">отклонил</option><option value="4">сделал</option></select>
-							<button class="task-save" type="button" disabled>save</button>
+							<div class="task-action-counters">объекты: создать:[`+task[7]+`],&nbsp;править:[`+task[8]+`],&nbsp;удалить:[`+task[9]+`];</div>
+							<select class="task-login"><option `+((task[11]=='')?'selected':'')+` disabled>&nbsp;</option><option value="nyblino1" `+((task[11]=='nyblino1')?'selected':'')+`>nyblino1</option><option value="avfrants" `+((task[11]=='avfrants')?'selected':'')+`>avfrants</option><option value="mvdenis1" `+((task[11]=='mvdenis1')?'selected':'')+`>mvdenis1</option><option value="mypanty1" `+((task[11]=='mypanty1')?'selected':'')+`>mypanty1</option></select>
+							<select class="task-state"><option value="new" `+((task[10]=='new')?'selected':'')+`>новый</option><option value="start" `+((task[10]=='start')?'selected':'')+`>в работе</option><option value="reject">отклонил</option><option value="end">сделал</option></select>
+							<button class="task-save" type="button">save</button>
 							<input class="task-reason" type="text" value="`+task[12]+`" placeholder="решение">
 						</div>
 					`);
