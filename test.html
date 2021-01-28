@@ -24,7 +24,7 @@
 		</style>
 	</head>
 	<body>
-		<h2>Активные задачи:</h2>
+		<h2 class="head">Активные задачи:</h2>
 		<div class="tasks-list"></div>
 		<script>
 			fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList').then(response=>response.json()).then(function(obj){
@@ -42,6 +42,7 @@
 						</div>
 					`);
 				};
+				document.getElementsByClassName('head')[0].insertAdjacentHTML('beforeEnd',`[`+document.getElementsByClassName('task').length+`]`);
 			});
 		</script>
 	</body>
