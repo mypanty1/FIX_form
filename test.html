@@ -44,7 +44,7 @@
 						</div>
 					`);
 				};
-				document.getElementsByClassName('counter')[0].insertAdjacentHTML('beforeEnd',`[`+document.getElementsByClassName('task').length+`]`);
+				document.getElementsByClassName('counter')[0].insertAdjacentHTML('beforeEnd',document.getElementsByClassName('task').length);
 			});
 		</script>
 	</body>
