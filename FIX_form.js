@@ -33,7 +33,7 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 		
 		.mobile-tile{box-shadow:0px 7px 16px 0px rgba(0,0,0,0.12);padding:4px;margin-bottom:4px;}
 		.tile-search{display:inline-flex;background-color:#fff;order:-1;}
-		.tile-search.hide{display:none;}
+		.tile-search .btn.hide{display:none;}
 		.tile{}
 		.tile-warning{background-color:#fee;}
 		.tile-select{background-color:#fed;}
