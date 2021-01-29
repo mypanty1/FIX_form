@@ -30,17 +30,17 @@
 		<div class="tasks-list"></div>
 		<script>
 			fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList&key=task_id').then(response=>response.json()).then(function(obj){
-				for(let task of obj.task_list.filter(function(row){return row[10]=='new'||row[10]=='start'})){/*только активные*/
+				for(let taskObj of obj.task_list.filter(function(item){return item.task_state=='new'||item.task_state=='start'})){/*только активные*/
 					document.getElementsByClassName('tasks-list')[0].insertAdjacentHTML('afterBegin',`
 						<div class="task">
-							<div class="task-id">`+task[0]+`</div><div class="task-time">`+(new Date(task[1]).toLocaleString())+`</div>
-							<div class="task-address">`+task[4]+` `+task[3]+`</div>
-							<div class="task-descr">`+task[6]+`</div>
-							<div class="task-action-counters">объекты: создать:[`+task[7]+`],&nbsp;править:[`+task[8]+`],&nbsp;удалить:[`+task[9]+`];</div>
-							<select class="task-login"><option `+((task[11]=='')?'selected':'')+` disabled>&nbsp;</option><option value="nyblino1" `+((task[11]=='nyblino1')?'selected':'')+`>nyblino1</option><option value="avfrants" `+((task[11]=='avfrants')?'selected':'')+`>avfrants</option><option value="mvdenis1" `+((task[11]=='mvdenis1')?'selected':'')+`>mvdenis1</option><option value="mypanty1" `+((task[11]=='mypanty1')?'selected':'')+`>mypanty1</option></select>
-							<select class="task-state"><option value="new" `+((task[10]=='new')?'selected':'')+`>новый</option><option value="start" `+((task[10]=='start')?'selected':'')+`>в работе</option><option value="reject">отклонил</option><option value="end">сделал</option></select>
+							<div class="task-id">`+taskObj.task_id+`</div><div class="task-time">`+(new Date(taskObj.date_time).toLocaleString())+`</div>
+							<div class="task-address">`+taskObj.site_name+` `+taskObj.address+`</div>
+							<div class="task-descr">`+taskObj.description+`</div>
+							<div class="task-action-counters">объекты: создать:[`+taskObj.num_create+`],&nbsp;править:[`+taskObj.num_update+`],&nbsp;удалить:[`+taskObj.num_delete+`];</div>
+							<select class="task-login"><option `+((taskObj.login_tech=='')?'selected':'')+` disabled>&nbsp;</option><option value="nyblino1" `+((taskObj.login_tech=='nyblino1')?'selected':'')+`>nyblino1</option><option value="avfrants" `+((taskObj.login_tech=='avfrants')?'selected':'')+`>avfrants</option><option value="mvdenis1" `+((taskObj.login_tech=='mvdenis1')?'selected':'')+`>mvdenis1</option><option value="mypanty1" `+((taskObj.login_tech=='mypanty1')?'selected':'')+`>mypanty1</option></select>
+							<select class="task-state"><option value="new" `+((taskObj.task_state=='new')?'selected':'')+`>новый</option><option value="start" `+((taskObj.task_state=='start')?'selected':'')+`>в работе</option><option value="reject">отклонил</option><option value="end">сделал</option></select>
 							<button class="task-save" type="button">save</button>
-							<input class="task-reason" type="text" value="`+task[12]+`" placeholder="решение">
+							<input class="task-reason" type="text" value="`+taskObj.reason+`" placeholder="решение">
 						</div>
 					`);
 				};
