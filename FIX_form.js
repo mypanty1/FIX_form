@@ -1,10 +1,4 @@
-<!DOCTYPE html>
-<html>
-	<head>
-	</head>
-	<body>
-		<script>
-			javascript:(function(){
+javascript:(function(){
 	
 if(document.title!='Inetcore BuildingCheckList'&&(window.location.href.includes('https://fx.mts.ru')||window.location.href.includes('http://inetcore.mts.ru/fix')||window.location.href.includes('http://pre.inetcore.mts.ru/fix'))){
 	document.title = 'Inetcore BuildingCheckList';
@@ -633,6 +627,3 @@ if(document.title!='Inetcore BuildingCheckList'&&(window.location.href.includes(
 };
 
 }());
-		</script>
-	</body>
-</html>
