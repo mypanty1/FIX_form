@@ -29,7 +29,7 @@
 		<h2 class="header">Активные задачи:<span class="counter"></span></h2>
 		<div class="tasks-list"></div>
 		<script>
-			fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList').then(response=>response.json()).then(function(obj){
+			fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList&key=task_id').then(response=>response.json()).then(function(obj){
 				for(let task of obj.task_list.filter(function(row){return row[10]=='new'||row[10]=='start'})){/*только активные*/
 					document.getElementsByClassName('tasks-list')[0].insertAdjacentHTML('afterBegin',`
 						<div class="task">
