@@ -1,7 +1,7 @@
 javascript:(function(){
 	
-if(document.title!='Inetcore BuildingCheckList'&&(window.location.href.includes('https://fx.mts.ru')||window.location.href.includes('http://inetcore.mts.ru/fix')||window.location.href.includes('http://pre.inetcore.mts.ru/fix'))){
-	document.title = 'Inetcore BuildingCheckList';
+if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://fx.mts.ru')||window.location.href.includes('http://inetcore.mts.ru/fix')||window.location.href.includes('http://pre.inetcore.mts.ru/fix'))){
+	document.title = 'Inetcore FIX_form';
 	
 	/*todo*/
 	/*ок*//*чекбокс пресет новосибирск*/
@@ -10,7 +10,14 @@ if(document.title!='Inetcore BuildingCheckList'&&(window.location.href.includes(
 	/*поменять генератор объектов и дизайн*/
 	/*добавить кнопки редактировать/удалить/создать/отправить*/
 	/*генератор дрс по шаблону*/
-	
+	let dev=false;
+	let input='';
+	if(dev){
+		window.AppInventor={
+			setWebViewString:function(str){console.log(str)},
+			getWebViewString:function(){return input},
+		};
+	};
 	function initApp(){
 		if(document.getElementsByTagName('link')[1].rel=='stylesheet'){document.getElementsByTagName('link')[1].remove()};
 		let addCSS = document.createElement('style');
@@ -108,17 +115,21 @@ if(document.title!='Inetcore BuildingCheckList'&&(window.location.href.includes(
 											.green{display:block;color:forestgreen;}
 		`;
 		addCSS.appendChild(document.createTextNode(myCSS));document.head.appendChild(addCSS);
-		document.getElementsByTagName('body')[0].innerHTML='';document.getElementsByTagName('body')[0].insertAdjacentHTML('afterBegin',`	
+		document.getElementsByTagName('body')[0].hidden=true;document.getElementsByTagName('body')[0].innerHTML='';document.getElementsByTagName('body')[0].insertAdjacentHTML('afterBegin',`	
 			<div class="mobile-tile tile-search">
 				<button type="button" class="btn" id="btn_clsAll">X</button>
 				<input type="checkbox" class="chkb" id="chkb_nsk" onchange="if(event.target.checked){document.getElementById('input_search').setAttribute('placeholder','адрес в новосибирске');document.getElementById('input_search').setAttribute('city','новосибирск ');}else{document.getElementById('input_search').setAttribute('placeholder','адрес');document.getElementById('input_search').setAttribute('city','');};" checked>
-				<input type="text" class="search-input" id="input_search" city="новосибирск " value="ду0000000054КР-04203" placeholder="адрес в новосибирске">
+				<input type="text" class="search-input" id="input_search" city="новосибирск " value="романова 60" placeholder="адрес в новосибирске">
 				<button type="button" class="btn" id="btn_search">поиск</button>
 				<button type="button" class="btn" id="btn_toggle_tasks">задачи</button>
 			</div>`
 		);/*55.04345,82.97501 леж8*//*55.03165,83.01073 выс5*//*ду0000000054КР-04082*//*ду0000000054КР-04203*/
+		document.getElementsByTagName('body')[0].hidden=false;
+		document.getElementById('input_search').addEventListener('keydown',function(e){if(e.keyCode===13){document.getElementById('btn_search').click();}});
 		document.getElementById('btn_search').addEventListener('click',function(){clsTiles();let pattern=document.getElementById('input_search').getAttribute('city')+document.getElementById('input_search').value.trim();if(pattern){searchByAddress(pattern)}});
 		document.getElementById('btn_clsAll').addEventListener('click',function(){clsTiles();document.getElementById('input_search').value='';});
+		window.AppInventor.setWebViewString('{"js_ok":"true"}');
+		let timer=setTimeout(delApp,100);function delApp(){if(document.getElementById('ptvtb-app')){document.getElementById('ptvtb-app').remove();clearTimeout(timer);}else{timer=setTimeout(delApp,100);};};
 		
 	};initApp();
 	
