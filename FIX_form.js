@@ -33,6 +33,7 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 		
 		.mobile-tile{box-shadow:0px 7px 16px 0px rgba(0,0,0,0.12);padding:4px;margin-bottom:4px;}
 		.tile-search{display:inline-flex;background-color:#fff;order:-1;}
+		.tile-search.hide{display:none;}
 		.tile{}
 		.tile-warning{background-color:#fee;}
 		.tile-select{background-color:#fed;}
@@ -121,19 +122,24 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 				<input type="checkbox" class="chkb" id="chkb_nsk" onchange="if(event.target.checked){document.getElementById('input_search').setAttribute('placeholder','адрес в новосибирске');document.getElementById('input_search').setAttribute('city','новосибирск ');}else{document.getElementById('input_search').setAttribute('placeholder','адрес');document.getElementById('input_search').setAttribute('city','');};" checked>
 				<input type="text" class="search-input" id="input_search" city="новосибирск " value="романова 60" placeholder="адрес в новосибирске">
 				<button type="button" class="btn" id="btn_search">поиск</button>
-				<button type="button" class="btn" id="btn_toggle_tasks">задачи</button>
+				<button type="button" class="btn hide" id="btn_getTaskList">задачи</button>
 			</div>`
 		);/*55.04345,82.97501 леж8*//*55.03165,83.01073 выс5*//*ду0000000054КР-04082*//*ду0000000054КР-04203*/
 		document.getElementsByTagName('body')[0].hidden=false;
 		document.getElementById('input_search').addEventListener('keydown',function(e){if(e.keyCode===13){document.getElementById('btn_search').click();}});
 		document.getElementById('btn_search').addEventListener('click',function(){clsTiles();let pattern=document.getElementById('input_search').getAttribute('city')+document.getElementById('input_search').value.trim();if(pattern){searchByAddress(pattern)}});
 		document.getElementById('btn_clsAll').addEventListener('click',function(){clsTiles();document.getElementById('input_search').value='';});
+		document.getElementById('btn_getTaskList').addEventListener('click',getTaskList);
 		window.AppInventor.setWebViewString('{"js_ok":"true"}');
 		let timer=setTimeout(delApp,100);function delApp(){if(document.getElementById('ptvtb-app')){document.getElementById('ptvtb-app').remove();clearTimeout(timer);}else{timer=setTimeout(delApp,100);};};
 		
 	};initApp();
 	
-	function clsTiles(){let tiles=document.getElementsByClassName('tile');while(tiles.length>0){tiles[0].remove();};};
+	function clsTiles(){
+		document.getElementById('btn_getTaskList').classList.add('hide');
+		let tiles=document.getElementsByClassName('tile');
+		while(tiles.length>0){tiles[0].remove();};
+	};
 	
 	function searchByAddress(pattern,apikey='96902d94-ce02-4125-9ca8-b028c28b7772'){/*поиск координат по адресу в яндекс*/
 		/*https://api-maps.yandex.ru/2.1/?apikey=96902d94-ce02-4125-9ca8-b028c28b7772&lang=ru-RU*/
@@ -308,6 +314,10 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 		document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile)
 	};
 	
+	function getTaskList(){
+		/*document.getElementsByClassName('tile-building').id*/
+	};
+	
 	function createTaskTile(){
 		let newTile=`
 			<div class="mobile-tile tile tile-task create-task">
@@ -344,6 +354,7 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 			</div>`;
 		if(document.getElementById(buildingObj.data.id)){document.getElementById(buildingObj.data.id).remove()};/*удалить дубль если есть*/
 		document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile);
+		document.getElementById('btn_getTaskList').classList.remove('hide');
 		getEntrances(buildingObj.data.id);
 	};
 	
@@ -467,10 +478,6 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 					</div>
 				</div>
 			</div>`;
-	};
-	
-	function hideTaskTile(){
-		
 	};
 	
 	function tabController(action,siteid,entrance){
