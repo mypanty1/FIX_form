@@ -5,19 +5,41 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 	
 	/*todo*/
 	/*ок*//*чекбокс пресет новосибирск*/
-	/*in process*//*task-tile*/
+	/*ок*//*task-tile*/
 	/*createSelectBuildingTile обработать выбор дома из списка близкостоящих*/
-	/*поменять генератор объектов и дизайн*/
-	/*добавить кнопки редактировать/удалить/создать/отправить*/
-	/*генератор дрс по шаблону*/
+	/*поменять генератор объектов+дизайн*/
+	/*добавить кнопки редактировать/создать*/
 	let dev=false;
-	let input='';
 	if(dev){
 		window.AppInventor={
 			setWebViewString:function(str){console.log(str)},
-			getWebViewString:function(){return input},
+			getWebViewString:function(){return JSON.stringify({type:'app_info',data:{login:'usertest1',about:'about'}})},
 		};
 	};
+	let app_info={
+		login:'default',
+		about:'default',
+	};
+	let lastStr='для отсечения дублей в getWebViewString';
+	let tId=setTimeout(function readWebString(){
+		let newStr=window.AppInventor.getWebViewString();
+		if(lastStr!=newStr){
+			lastStr=newStr;
+			if(newStr.length>0){
+				let msgObj=JSON.parse(newStr);
+				switch(msgObj.type){/*тип data*/
+					case'app_info':
+						app_info=msgObj.data;
+					break;
+					default:
+						console.log('msgObj.type',msgObj);
+				};
+			};
+		};
+		tId=setTimeout(readWebString,1000);/*1sec*/
+	},1000);/*1sec*/
+	
+	
 	function initApp(){
 		if(document.getElementsByTagName('link')[1].rel=='stylesheet'){document.getElementsByTagName('link')[1].remove()};
 		let addCSS = document.createElement('style');
@@ -33,11 +55,11 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 		
 		.mobile-tile{box-shadow:0px 7px 16px 0px rgba(0,0,0,0.12);padding:4px;margin-bottom:4px;}
 		.tile-search{display:inline-flex;background-color:#fff;order:-1;}
+		.tile-search.hide{display:none;}
 		.tile{}
 		.tile-warning{background-color:#fee;}
 		.tile-select{background-color:#fed;}
 		.tile-task{display:inline-flex;background-color:#fff;}
-		.tile-task.hide{display:none;}
 			.create-task{}
 				.task-input{font-size:12px;width:100%;resize:vertical;min-height:16px;}
 			.task-new{background-color:aliceblue;}
@@ -132,7 +154,6 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 		document.getElementById('btn_getTaskList').addEventListener('click',getTaskList);
 		window.AppInventor.setWebViewString('{"js_ok":"true"}');
 		let timer=setTimeout(delApp,100);function delApp(){if(document.getElementById('ptvtb-app')){document.getElementById('ptvtb-app').remove();clearTimeout(timer);}else{timer=setTimeout(delApp,100);};};
-		
 	};initApp();
 	
 	function clsTiles(){
@@ -315,35 +336,53 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 	};
 	
 	function getTaskList(){
-		/*document.getElementsByClassName('tile-building').id*/
+		let taskTiles=document.getElementsByClassName('tile-task');while(taskTiles.length>0){taskTiles[0].remove()};
+		let site_id=document.getElementsByClassName('tile-building')[0].id;
+		fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList&key=site_id&value='+site_id).then(response=>response.json()).then(function(obj){
+			for(let task of obj.task_list.filter(function(item){return item.task_state=='new'||item.task_state=='start'})){/*только активные*/
+				createTaskTile(task);
+			};
+			if(!document.getElementsByClassName('task-new').length&&!document.getElementsByClassName('task-start').length){
+				createTaskTile({task_id:''});
+			};
+		});
 	};
 	
-	function createTaskTile(){
-		let newTile=`
-			<div class="mobile-tile tile tile-task create-task">
-				<textarea rows="1" class="task-input" placeholder="описание запроса"></textarea><button type="button" class="btn">отправить</button>
-			</div>
-			<div class="mobile-tile tile tile-task task-new">
-				<div class="task-id">T1611922731347_mypanty1</div><div class="task-state">создан:</div><div class="task-date">29-01-2021,18:38:33</div>
-			</div>
-			<div class="mobile-tile tile tile-task task-start">
-				<div class="task-id">T1611922766647_mypanty1</div><div class="task-state">в работе:</div><div class="task-date">29-01-2021,19:32:44</div>
-			</div>
-			<div class="mobile-tile tile tile-task task-end">
-				<div class="task-id">T1611922231347_mypanty1</div><div class="task-state">завершен:</div><div class="task-date">29-01-2021,13:14:25</div>
-			</div>
-			<div class="mobile-tile tile tile-task task-reject">
-				<div class="task-id">T1613332731347_mypanty1</div><div class="task-state">отклонен:</div><div class="task-date">29-01-2021,20:41:45</div>
-			</div>
-		`;
+	function createTaskTile(task){
+		let newTile='';
+		if(task.task_id){
+			let stateText=(task.task_state)?({'new':'создан:','start':'в работе:','reject':'отклонен:','end':'завершен:'}[task.task_state]):'unknown:';
+			let last_date_time=new Date(task.last_date_time);
+			let lastDateTime=((task.last_date_time)?(last_date_time.toLocaleDateString()+' '+last_date_time.toLocaleTimeString()):'');
+			newTile=`
+				<div class="mobile-tile tile tile-task task-`+task.task_state+`" id="`+task.task_id+`">
+					<div class="task-id">`+task.task_id+`</div><div class="task-state">`+stateText+`</div><div class="task-date">`+lastDateTime+`</div>
+				</div>
+			`;
+		}else{
+			newTile=`
+				<div class="mobile-tile tile tile-task create-task">
+					<textarea rows="1" class="task-input" placeholder="описание запроса" id="input_task"></textarea><button type="button" class="btn" id="btn_task">отправить</button>
+				</div>
+			`;
+		};
 		document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile);
+		if(document.getElementById('btn_task')){document.getElementById('btn_task').addEventListener('click',createNewTask);};
+	};
+	
+	function createNewTask(){
+		let url='https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec';
+		let prms='?action=addTask&login_esipa='+app_info.login+'&address='+document.getElementById('input_search').value+'&site_id='+document.getElementsByClassName('tile-building')[0].getAttribute('id')+'&site_name='+document.getElementsByClassName('tile-building')[0].getAttribute('name')+'&description='+document.getElementById('input_task').value;
+		fetch(url+prms).then(response=>response.json()).then(function(obj){
+			console.log('task_id',obj.task_id);getTaskList();
+		});
 	};
 	
 	function createBuildingTile(buildingObj){/*building*/
 		function trimAddress(addr){let addrArr=addr.split(', ').reverse();return addrArr[1].replace(/\s/g,'')+' '+addrArr[0].replace(/\s/g,'')};
 		document.getElementById('input_search').value=trimAddress(buildingObj.data.address);
 		let newTile=`
-			<div class="mobile-tile tile tile-building" id="`+buildingObj.data.id+`">
+			<div class="mobile-tile tile tile-building" id="`+buildingObj.data.id+`" name="`+buildingObj.data.name+`">
 				<div class="tab-controller">
 					<div class="title">подъезды:</div>
 					<div class="btns-row-scroll">
