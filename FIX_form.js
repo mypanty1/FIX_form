@@ -373,7 +373,7 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 	
 	function createNewTask(){
 		let url='https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec';
-		let prms='?action=addTask&login_esipa='+app_info.login||app_info.username+'&address='+document.getElementById('input_search').value+'&site_id='+document.getElementsByClassName('tile-building')[0].getAttribute('id')+'&site_name='+document.getElementsByClassName('tile-building')[0].getAttribute('name')+'&description='+document.getElementById('input_task').value;
+		let prms='?action=addTask&login_esipa='+(app_info.login||app_info.username)+'&address='+document.getElementById('input_search').value+'&site_id='+document.getElementsByClassName('tile-building')[0].getAttribute('id')+'&site_name='+document.getElementsByClassName('tile-building')[0].getAttribute('name')+'&description='+document.getElementById('input_task').value;
 		fetch(url+prms).then(response=>response.json()).then(function(obj){
 			console.log('task_id',obj.task_id);getTaskList();
 		});
