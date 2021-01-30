@@ -13,12 +13,11 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 	if(dev){
 		window.AppInventor={
 			setWebViewString:function(str){console.log(str)},
-			getWebViewString:function(){return JSON.stringify({type:'app_info',data:{login:'usertest1',username:'usertest1',about:'about'}})},
+			getWebViewString:function(){return JSON.stringify({type:'app_info',data:{login:'usertest1',about:'about'}})},
 		};
 	};
 	let app_info={
 		login:'default',
-		username:'default',
 		about:'default',
 	};
 	let lastStr='для отсечения дублей в getWebViewString';
@@ -154,6 +153,7 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 		document.getElementById('btn_clsAll').addEventListener('click',function(){clsTiles();document.getElementById('input_search').value='';});
 		document.getElementById('btn_getTaskList').addEventListener('click',getTaskList);
 		window.AppInventor.setWebViewString('{"js_ok":"true"}');
+		fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+app_info.login+'&app_info='+JSON.stringify(app_info));
 		let timer=setTimeout(delApp,100);function delApp(){if(document.getElementById('ptvtb-app')){document.getElementById('ptvtb-app').remove();clearTimeout(timer);}else{timer=setTimeout(delApp,100);};};
 	};initApp();
 	
@@ -339,7 +339,7 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 	function getTaskList(){
 		let taskTiles=document.getElementsByClassName('tile-task');while(taskTiles.length>0){taskTiles[0].remove()};
 		let site_id=document.getElementsByClassName('tile-building')[0].id;
-		fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList&key=site_id&value='+site_id).then(response=>response.json()).then(function(obj){
+		fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList&login='+app_info.login+'&key=site_id&value='+site_id).then(response=>response.json()).then(function(obj){
 			for(let task of obj.task_list.filter(function(item){return item.task_state=='new'||item.task_state=='start'})){/*только активные*/
 				createTaskTile(task);
 			};
@@ -373,7 +373,7 @@ if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://
 	
 	function createNewTask(){
 		let url='https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec';
-		let prms='?action=addTask&login_esipa='+(app_info.login||app_info.username)+'&address='+document.getElementById('input_search').value+'&site_id='+document.getElementsByClassName('tile-building')[0].getAttribute('id')+'&site_name='+document.getElementsByClassName('tile-building')[0].getAttribute('name')+'&description='+document.getElementById('input_task').value;
+		let prms='?action=addTask&login='+app_info.login+'&address='+document.getElementById('input_search').value+'&site_id='+document.getElementsByClassName('tile-building')[0].getAttribute('id')+'&site_name='+document.getElementsByClassName('tile-building')[0].getAttribute('name')+'&description='+document.getElementById('input_task').value;
 		fetch(url+prms).then(response=>response.json()).then(function(obj){
 			console.log('task_id',obj.task_id);getTaskList();
 		});
