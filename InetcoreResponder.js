@@ -4,7 +4,7 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 	/*app communication*/
 	let timeout=100;/*01sec*/
 	let lastStr='';
-	let uidData={};
+	const uidData={};
 	let jsonObj={};
 	function sendStr(type='',from_inetcore=null,uid='unknown_'+Date.now()){
 		let str=JSON.stringify({
