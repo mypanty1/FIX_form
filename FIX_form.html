@@ -101,10 +101,17 @@
 			let app={login:'mypanty1'};
 			let user={};
 			function init(){
+				fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+app.login/*,{mode:'no-cors'}*/).then(response=>response.json());
+				fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+app.login).then(response=>response.json()).then(function(obj){
+					user=obj.user;
+					initDocument();
+				});
+			};
+			function initDocument(){
 				document.getElementById('input_search').setAttribute('placeholder','адрес в '+(user.city||'новосибирск'));
 				document.getElementById('input_search').setAttribute('city',(user.city||'новосибирск'));
 				document.getElementById('input_search').addEventListener('keydown',function(e){if(e.keyCode===13){document.getElementById('btn_search').click();}});
-				document.getElementById('btn_search').addEventListener('click',function(){clsTiles();let pattern=document.getElementById('input_search').getAttribute('city')+document.getElementById('input_search').value.trim();if(pattern){searchByAddress(pattern)}});
+				document.getElementById('btn_search').addEventListener('click',function(){clsTiles();let pattern=document.getElementById('input_search').getAttribute('city')+' '+document.getElementById('input_search').value.trim();if(pattern){searchByAddress(pattern)}});
 				document.getElementById('btn_clsAll').addEventListener('click',function(){clsTiles();document.getElementById('input_search').value='';});
 				document.getElementById('btn_getTaskList').addEventListener('click',getTaskList);
 				document.getElementById('chkb_nsk').addEventListener('change',function(e){
@@ -133,6 +140,50 @@
 					};
 				});
 			};
+			function getTaskList(){
+				let taskTiles=document.getElementsByClassName('tile-task');while(taskTiles.length>0){taskTiles[0].remove()};
+				let site_id=document.getElementsByClassName('tile-building')[0].id;
+				fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList&login='+app.login+'&key=site_id&value='+site_id).then(response=>response.json()).then(function(obj){
+					for(let task of obj.task_list.filter(function(item){return item.task_state=='new'||item.task_state=='start'})){/*только активные*/
+						createTaskTile(task);
+					};
+					if(!document.getElementsByClassName('task-new').length&&!document.getElementsByClassName('task-start').length){
+						createTaskTile({task_id:''});
+					};
+				});
+			};			
+			function createTaskTile(task){
+				let newTile='';
+				if(task.task_id){
+					let stateText=(task.task_state)?({'new':'создан:','start':'в работе:','reject':'отклонен:','end':'завершен:'}[task.task_state]):'unknown:';
+					let last_date_time=new Date(task.last_date_time);
+					let lastDateTime=((task.last_date_time)?(last_date_time.toLocaleDateString()+' '+last_date_time.toLocaleTimeString()):'');
+					newTile=`
+						<div class="mobile-tile tile tile-task task-`+task.task_state+`" id="`+task.task_id+`">
+							<div class="task-id">`+task.task_id+`</div><div class="task-state">`+stateText+`</div><div class="task-date">`+lastDateTime+`</div>
+						</div>
+					`;
+				}else{
+					newTile=`
+						<div class="mobile-tile tile tile-task create-task">
+							<textarea rows="1" class="task-input" placeholder="описание запроса" id="input_task"></textarea><button type="button" class="btn" id="btn_task">отправить</button>
+						</div>
+					`;
+				};
+				document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile);
+				if(document.getElementById('btn_task')){document.getElementById('btn_task').addEventListener('click',createNewTask);};
+			};			
+			function createNewTask(){
+				let url='https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec';
+				let prms='?action=addTask&login='+app.login
+				+'&address='+document.getElementById('input_search').value
+				+'&site_id='+document.getElementsByClassName('tile-building')[0].getAttribute('id')
+				+'&site_name='+document.getElementsByClassName('tile-building')[0].getAttribute('name')
+				+'&description='+document.getElementById('input_task').value;
+				fetch(url+prms).then(response=>response.json()).then(function(obj){
+					console.log('task_id',obj.task_id);getTaskList();
+				});
+			};
 		</script>
 	</head>
 	<body>
@@ -142,13 +193,13 @@
 			<input type="text" class="search-input" id="input_search" city="" value="" placeholder="">
 			<button type="button" class="btn" id="btn_search">поиск</button>
 			<button type="button" class="btn hide" id="btn_getTaskList">задачи</button>
+			<script>
+				fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+app.login/*,{mode:'no-cors'}*/).then(response=>response.json());
+				fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+app.login).then(response=>response.json()).then(function(obj){
+					user=obj.user;
+					init();
+				});
+			</script>
 		</div>
-		<script>
-			fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+app.login,{mode:'no-cors'});
-			fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+app.login,{mode:'no-cors'}).then(response=>response.json()).then(function(obj){
-				user=obj.user;
-				init();
-			});
-		</script>
 	</body>
 </html>
