@@ -7,9 +7,9 @@
 		<style type="text/css"></style>
 	</head>
 	<body>
-		<div id="text"><div>
-		<input type="text" id="input">
-		<input type="button" id="button" onclick="window.AppInventor.setWebViewString(document.getElementById('input').value)">
+		<div id="text"></div>
+		<div><input type="text" id="input"></div>
+		<div><input type="button" id="button" onclick="window.AppInventor.setWebViewString(document.getElementById('input').value)"></div>
 		<script>
 			var tId=setTimeout(function readWebString(){
 				document.getElementById('text').innerHTML=window.AppInventor.getWebViewString();
