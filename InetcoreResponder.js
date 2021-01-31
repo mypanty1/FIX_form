@@ -4,7 +4,7 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 	/*app communication*/
 	let timeout=100;/*01sec*/
 	let lastStr='';
-	let jsonObj={};/*dev*/
+	let responses={};
 	function sendStr(type='',from_inetcore=null,uid='unknown_'+Date.now()){
 		let str=JSON.stringify({
 			'from_inetcore':from_inetcore,
@@ -18,18 +18,34 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 		let str=window.AppInventor.getWebViewString();
 		if(str!=lastStr){
 			lastStr=str;
-			jsonObj=JSON.parse(str);/*"{"to_inetcore":{"type":"post","url":"/call/main/get_user_data","prm":null},"uid":"uid_1612004586606"}"*/
+			let jsonObj=JSON.parse(str);/*"{"to_inetcore":{"type":"post","url":"/call/main/get_user_data","prm":null},"uid":"uid_1612004586606"}"*/
 			if(jsonObj.uid&&jsonObj.to_inetcore){
 				switch(jsonObj.to_inetcore.type){
 					case'get':
 						httpGet(jsonObj.to_inetcore.url,true).then(function(data){
+							responses[jsonObj.uid]=data;
 							sendStr('data',data,jsonObj.uid);
 						});
 					break;
 					case'post':
 						httpPost(jsonObj.to_inetcore.url,jsonObj.to_inetcore.prm,true).then(function(data){
+							responses[jsonObj.uid]=data;
 							sendStr('data',data,jsonObj.uid);
 						});
+					break;
+					case'uid_miss':
+						if(responses[jsonObj.uid]){
+							sendStr('data',responses[jsonObj.uid],jsonObj.uid);
+						}else{
+							sendStr('error',jsonObj.uid,jsonObj.uid);
+						};
+					break;
+					case'uid_ok':
+						if(responses[jsonObj.uid]){
+							responses[jsonObj.uid]=undefined;
+						}else{
+							sendStr('error',jsonObj.uid,jsonObj.uid);
+						};
 					break;
 					default:
 						sendStr('error',jsonObj.to_inetcore,jsonObj.uid);
