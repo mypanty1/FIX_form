@@ -99,14 +99,13 @@
 		</style>
 		<script type="text/javascript">
 			/*app communication*/
-			let router={};
 			let timeout=1000;/*1sec*/
 			let lastStr='';
-			let last={};
-			let lastObj={};/*dev*/
+			let currentAction={};
+			let jsonObj={};/*dev*/
 			function sendStr(to_inetcore=null,callback){
 				let uid='uid_'+Date.now();
-				last={uid:uid,f:callback};
+				currentAction={uid:uid,action:callback};
 				let str=JSON.stringify({
 					'to_inetcore':to_inetcore,
 					'uid':uid,
@@ -118,10 +117,10 @@
 				let str=window.AppInventor.getWebViewString();
 				if(str!=lastStr){
 					lastStr=str;
-					lastObj=JSON.parse(str);
-					if(lastObj.type!='error'&&lastObj.from_inetcore&&lastObj.uid){
-						if(last.uid==lastObj.uid){
-							last.f(lastObj.from_inetcore);
+					jsonObj=JSON.parse(str);
+					if(jsonObj.type!='error'&&jsonObj.from_inetcore&&jsonObj.uid){
+						if(currentAction.uid==jsonObj.uid){
+							currentAction.action(jsonObj.from_inetcore);
 						};
 					};
 				};
@@ -265,9 +264,9 @@
 						</div>`;
 					document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile)
 				};
-				function searchByCoords(pattern,cls=true){
+				function searchByCoords(coords,cls=true){
 					if(cls){clsTiles()};/*костыль*/
-					sendStr({inetcore:{type:'post',url:'/call/device/search?fresh='+Math.random(),prm:{'pattern':pattern}}},function(result){
+					sendStr({type:'post',url:'/call/device/search',prm:{'pattern':coords}},function(result){
 						console.log(JSON.stringify(result));
 						if(result){
 							switch(result.key){
