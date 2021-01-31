@@ -4,7 +4,7 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 	/*app communication*/
 	let timeout=100;/*01sec*/
 	let lastStr='';
-	let responses={};
+	let uidData={};
 	function sendStr(type='',from_inetcore=null,uid='unknown_'+Date.now()){
 		let str=JSON.stringify({
 			'from_inetcore':from_inetcore,
@@ -23,26 +23,26 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 				switch(jsonObj.to_inetcore.type){
 					case'get':
 						httpGet(jsonObj.to_inetcore.url,true).then(function(data){
-							responses[jsonObj.uid]=data;
+							uidData[jsonObj.uid]=data;
 							sendStr('data',data,jsonObj.uid);
 						});
 					break;
 					case'post':
 						httpPost(jsonObj.to_inetcore.url,jsonObj.to_inetcore.prm,true).then(function(data){
-							responses[jsonObj.uid]=data;
+							uidData[jsonObj.uid]=data;
 							sendStr('data',data,jsonObj.uid);
 						});
 					break;
 					case'uid_miss':
-						if(responses[jsonObj.to_inetcore.uid]){
-							sendStr('data',responses[jsonObj.to_inetcore.uid],jsonObj.uid);
+						if(uidData[jsonObj.to_inetcore.uid]){
+							sendStr('data',uidData[jsonObj.to_inetcore.uid],jsonObj.uid);
 						}else{
 							sendStr('error',jsonObj.to_inetcore.uid,jsonObj.uid);
 						};
 					break;
 					case'uid_ok':
-						if(responses[jsonObj.to_inetcore.uid]){
-							responses[jsonObj.to_inetcore.uid]=undefined;
+						if(uidData[jsonObj.to_inetcore.uid]){
+							uidData[jsonObj.to_inetcore.uid]=undefined;
 						}else{
 							sendStr('error',jsonObj.to_inetcore.uid,jsonObj.uid);
 						};
