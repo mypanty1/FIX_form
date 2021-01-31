@@ -184,7 +184,6 @@
 						let coords=obj.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.replace(' ',',').split(',').reverse().join(',');/*55.03165,83.01073*/
 						if(coords){
 							searchByCoords(coords);
-							/*showError('coords');*/
 						}else{
 							showError('location error');
 						};
