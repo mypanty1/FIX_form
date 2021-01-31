@@ -4,11 +4,11 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 	/*app communication*/
 	let timeout=1000;/*1sec*/
 	let lastStr='';
-	let lastObj={};/*dev*/
+	let jsonObj={};/*dev*/
 	function sendStr(type='',from_inetcore=null,uid='unknown_'+Date.now()){
 		let str=JSON.stringify({
-			'type':type,
 			'from_inetcore':from_inetcore,
+			'type':type,
 			'uid':uid,
 		});
 		lastStr=str;
@@ -18,21 +18,21 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 		let str=window.AppInventor.getWebViewString();
 		if(str!=lastStr){
 			lastStr=str;
-			lastObj=JSON.parse(str);/*"{"to_inetcore":{"type":"post","url":"/call/main/get_user_data","prm":null},"uid":"uid_1612004586606"}"*/
-			if(lastObj.uid&&lastObj.to_inetcore){
-				switch(lastObj.to_inetcore.type){
+			jsonObj=JSON.parse(str);/*"{"to_inetcore":{"type":"post","url":"/call/main/get_user_data","prm":null},"uid":"uid_1612004586606"}"*/
+			if(jsonObj.uid&&jsonObj.to_inetcore){
+				switch(jsonObj.to_inetcore.type){
 					case'get':
-						httpGet(lastObj.to_inetcore.url,true).then(function(data){
-							sendStr('data',data,lastObj.uid);
+						httpGet(jsonObj.to_inetcore.url,true).then(function(data){
+							sendStr('data',data,jsonObj.uid);
 						});
 					break;
 					case'post':
-						httpPost(lastObj.to_inetcore.url,lastObj.to_inetcore.prm,true).then(function(data){
-							sendStr('data',data,lastObj.uid);
+						httpPost(jsonObj.to_inetcore.url,jsonObj.to_inetcore.prm,true).then(function(data){
+							sendStr('data',data,jsonObj.uid);
 						});
 					break;
 					default:
-						sendStr('error',lastObj.to_inetcore,lastObj.uid);
+						sendStr('error',jsonObj.to_inetcore,jsonObj.uid);
 				};
 			};
 		};

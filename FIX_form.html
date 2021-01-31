@@ -105,7 +105,7 @@
 			let jsonObj={};/*dev*/
 			function sendStr(to_inetcore=null,callback){
 				let uid='uid_'+Date.now();
-				currentAction={uid:uid,action:callback};
+				currentAction[uid]={action:callback};
 				let str=JSON.stringify({
 					'to_inetcore':to_inetcore,
 					'uid':uid,
@@ -119,8 +119,8 @@
 					lastStr=str;
 					jsonObj=JSON.parse(str);
 					if(jsonObj.type!='error'&&jsonObj.from_inetcore&&jsonObj.uid){
-						if(currentAction.uid==jsonObj.uid){
-							currentAction.action(jsonObj.from_inetcore);
+						if(currentAction[jsonObj.uid]){
+							currentAction[jsonObj.uid].action(jsonObj.from_inetcore);
 						};
 					};
 				};
@@ -152,7 +152,7 @@
 			<input type="checkbox" class="chkb" id="chkb_nsk" checked disabled>
 			<input type="text" class="search-input" id="input_search" city="" value="" placeholder="" disabled>
 			<button type="button" class="btn" id="btn_search" disabled>поиск</button>
-			<button type="button" class="btn hide" id="btn_getTaskList" disabled>задачи</button>
+			<button type="button" class="btn hide" id="btn_getTaskList">задачи</button>
 			<script>
 				initUser();
 				
@@ -162,7 +162,6 @@
 					document.getElementById('chkb_nsk').removeAttribute('disabled');
 					document.getElementById('input_search').removeAttribute('disabled');
 					document.getElementById('btn_search').removeAttribute('disabled');
-					document.getElementById('btn_getTaskList').removeAttribute('disabled');
 					document.getElementById('input_search').setAttribute('placeholder','адрес в '+(user.city||'новосибирск'));
 					document.getElementById('input_search').setAttribute('city',(user.city||'новосибирск'));
 					document.getElementById('input_search').addEventListener('keydown',function(e){if(e.keyCode===13){document.getElementById('btn_search').click();}});
@@ -266,110 +265,109 @@
 				};
 				function searchByCoords(coords,cls=true){
 					if(cls){clsTiles()};/*костыль*/
-					sendStr({type:'post',url:'/call/device/search',prm:{'pattern':coords}},function(result){
-						console.log(JSON.stringify(result));
-						if(result){
-							switch(result.key){
+					sendStr({type:'post',url:'/call/device/search',prm:{'pattern':coords}},function(s_res){
+						if(s_res){
+							switch(s_res.key){
 								case'building':/*по имени узла*/
-									switch(result.type){
+									switch(s_res.type){
 										case'building':/*узел ду*/
 										case'building_mu':/*узел му*/
-											createBuildingTile(result);
+											createBuildingTile(s_res);
 										break;
 										case'warning':/*ду000000054КР-00340*/
 										default:
-											createErrorTile(result);
+											createErrorTile(s_res);
 									};
 								break;
 								case'building_id':/*по id площадки*/
-									switch(result.type){
+									switch(s_res.type){
 										case'building_list':/*ду+му(или ду+ду?)*//*9135155037513569210*/
-											var DU_or_MU_only=result.data.filter(function(node){return node.type=='ДУ'||node.type=='МУ'});
+											var DU_or_MU_only=s_res.data.filter(function(node){return node.type=='ДУ'||node.type=='МУ'});
 											if(DU_or_MU_only&&DU_or_MU_only.length>0){
 												createBuildingTile({'data':Object.assign(DU_or_MU_only[0],{'nodes':DU_or_MU_only})});
 											}else{
-												createSelectBuildingTile(result);
+												createSelectBuildingTile(s_res);
 											};
 										break;
 										case'building':/*ду*//*9135155037413562085*/
 										case'building_mu':/*узел му*//*8101638987013413752*/
-											createBuildingTile(result);
+											createBuildingTile(s_res);
 										break;
 										default:
-											createErrorTile(result);
+											createErrorTile(s_res);
 									};
 								break;
 								case'coordinates':/*поиск по координатам*/
-									switch(result.type){
+									switch(s_res.type){
 										case'building':/*узел ду*/
 										case'building_mu':/*узел му*/
-											createBuildingTile(result);
+											createBuildingTile(s_res);
 										break;
 										case'building_list':/*список узлов на адресе или рядом*//*55.037087,82.929278*/
-											createSelectBuildingTile(result);
+											createSelectBuildingTile(s_res);
 										break;
 										case'warning':/*нет узлов по координатам*/
 										default:
-											createErrorTile(result);
+											createErrorTile(s_res);
 									};
 								break;
 								case'device':/*поиск разрешенных устройств по имени Nioss*/
-									switch(result.type){
+									switch(s_res.type){
 										case'device':/*OP_25KR_00853_1*/
-											createErrorTile(result);
+											createErrorTile(s_res);
 										break;
 										case'warning':/*OP_25KR_00853_5*/
 										default:
-											createErrorTile(result);
+											createErrorTile(s_res);
 									};
 								break;
 								case'port':/*поиск порта по имени Smarts*/
-									switch(result.type){
+									switch(s_res.type){
 										case'port':/*PORT-ETH_KR_54_02227_1/1*/
-											createErrorTile(result);
+											createErrorTile(s_res);
 										break;
 										case'warning':/*PORT-ETH_KR_54_02227_1/16*/
 										default:
-											createErrorTile(result);
+											createErrorTile(s_res);
 									};
 								break;
 								case'ip':/*поиск устройства по ip*/
-									switch(result.type){
+									switch(s_res.type){
 										case'list':/*10.221.168.14*//*порты 10.70.18.110*/
 										case'device':/*10.221.185.133*/
-											createErrorTile(result);
+											createErrorTile(s_res);
 										break;
 										case'warning':/*10.70.34.67*/
 										default:
-											createErrorTile(result);
+											createErrorTile(s_res);
 									};
 								break;
 								case'mac':/*поиск по маку*/
-									switch(result.type){
+									switch(s_res.type){
 										case'mac':
-											createErrorTile(result);
+											createErrorTile(s_res);
 										break;
 										case'warning':/*08c6.b3c0.397d*/
 										default:
-											createErrorTile(result);
+											createErrorTile(s_res);
 									};
 								break;
 								case'account':/*поиск по лс*/
-									switch(result.type){
+									switch(s_res.type){
 										case'list':/*список дублей по регионам*//*2-042-0023253*//*нет, list возвращает lbsv*/
 										case'account':/*абонент*/
-											createErrorTile(result);
+											createErrorTile(s_res);
 										break;
 										case'warning':/*6-091-0000000*/
 										default:
-											createErrorTile(result);;
+											createErrorTile(s_res);;
 									};
 								break;
 								default:
-									createErrorTile(result);
+									createErrorTile(s_res);
 							};
 						}else{
-							showError(pattern);
+							showError(coords);
 						};
 					});
 				};
@@ -392,7 +390,7 @@
 					getEntrances(buildingObj.data.id);
 				};
 				function getEntrances(siteid){/*сетка падиков*/
-					sendStr({type:'post',url:'/call/device/site_flat_list?fresh='+Math.random(),prm:{'siteid':siteid}},function(entrances){
+					sendStr({type:'post',url:'/call/device/site_flat_list',prm:{'siteid':siteid}},function(entrances){
 						if(entrances.type=='floors'||entrances.data.length>0){/*наличие падиков*/
 							for(let entrance of entrances.data.filter(function(item){return !item.nioss_error})){/*перебор падиков*/
 								document.getElementById(siteid+'.entrances').insertAdjacentHTML('beforeEnd',createEntrance(entrance));
@@ -435,7 +433,7 @@
 								};
 							};
 							tabController('first');
-							sendStr({type:'post',url:'/call/device/site_rack_list?fresh='+Math.random(),prm:{'siteid':siteid}},function(racks){
+							sendStr({type:'post',url:'/call/device/site_rack_list',prm:{'siteid':siteid}},function(racks){
 								for(let rack of racks.filter(function(item){return !item.nioss_error})){
 									let container=rack.ENTRANCE_ID+'.'+((rack.OFF_FLOR=='Подвал')?'podval':(rack.OFF_FLOR=='Чердак')?'cherdak':(rack.OFF_FLOR=='Технический этаж')?'tehetag':('floor_'+rack.FLOOR))+((isCU(rack.RACK_NAME))?'.rk':(isL(rack.RACK_NAME))?'.racks':'.racks');
 									if(!document.getElementById(container)){/*если шкаф на этаже вне подъезда*//*ду0000000054КР-02878*/
@@ -443,7 +441,7 @@
 									};
 									document.getElementById(container).insertAdjacentHTML('beforeEnd',createRack(rack));
 								};
-								sendStr({type:'post',url:'/call/device/devices?fresh='+Math.random(),prm:{'siteid':siteid}},function(devices){
+								sendStr({type:'post',url:'/call/device/devices',prm:{'siteid':siteid}},function(devices){
 									devices.map(function(device){
 										let inrack=document.getElementById(toKP(device.DEVICE_NAME));
 										if(inrack){/*если есть в шкафу*/
@@ -451,12 +449,12 @@
 										}else{
 											/*засунуть в фейковый шкаф, видимый из дома*/
 										};
-										sendStr({type:'post',url:'/call/hdm/device_ping?fresh='+Math.random(),prm:{'device':device}},function(ping){
+										sendStr({type:'post',url:'/call/hdm/device_ping',prm:{'device':device}},function(ping){
 											setPingLeds(device.DEVICE_NAME,ping.code);
 										});
 									});
 								});
-								sendStr({type:'post',url:'/call/device/patch_panels?fresh='+Math.random(),prm:{'siteid':siteid}},function(plints){
+								sendStr({type:'post',url:'/call/device/patch_panels',prm:{'siteid':siteid}},function(plints){
 									let ppanels=plints;for(let pp of ppanels){ppanels=ppanels.concat(pp.children);};/*поднятие из топологии*/
 									for(let pp of ppanels.filter(function(item){return !item.nioss_error})){
 										if(pp.rack_id=='0'){/*вне шкафа*//*type-PP without*/
