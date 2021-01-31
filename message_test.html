@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+		<title>message test</title>
+		<style type="text/css"></style>
+	</head>
+	<body>
+		<div id="text"><div>
+		<input type="text" id="input">
+		<input type="button" id="button" onclick="window.AppInventor.setWebViewString(document.getElementById('input').value)">
+		<script>
+			var tId=setTimeout(function readWebString(){
+				document.getElementById('text').innerHTML=window.AppInventor.getWebViewString();
+				tId=setTimeout(readWebString,1000);/*1sec*/
+			},1000);/*1sec*/
+		</script>
+	</body>
+</html>
