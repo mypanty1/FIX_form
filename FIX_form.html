@@ -120,19 +120,20 @@
 					lastObj=JSON.parse(str);
 					if(lastObj.type!='error'&&lastObj.from_inetcore&&lastObj.uid){
 						router[lastObj.uid](lastObj.from_inetcore,lastObj.uid);
-					}else if(lastObj.responder){
+					}/*else if(lastObj.responder){
 						initUser();
-					};
+					}*/;
 				};
 				readWebString=setTimeout(rws,timeout);
 			},timeout);
 			window.AppInventor.setWebViewString('{"FIX_form":"'+document.title+'"}');
-			
+				
 			/*current Inetcore user*/
 			let inetcore_user={login:'default'};
 			/*current user profile*/
 			let user={};
 			
+			initUser();
 			function initUser(){
 				sendStr({type:'post',url:'/call/main/get_user_data',prm:null},function(obj,uid){
 					inetcore_user.login=obj.username/*.toLowerCase()*/;
