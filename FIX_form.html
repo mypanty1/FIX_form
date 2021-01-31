@@ -103,11 +103,11 @@
 			let timeout=1000;/*1sec*/
 			let lastStr='';
 			let lastObj={};/*dev*/
-			function sendStr(data=null,callback){
+			function sendStr(to_inetcore=null,callback){
 				let uid='uid_'+Date.now();
 				router[uid]=callback;
 				let str=JSON.stringify({
-					'data':data,
+					'to_inetcore':to_inetcore,
 					'uid':uid,
 				});
 				lastStr=str;
@@ -118,8 +118,8 @@
 				if(str!=lastStr){
 					lastStr=str;
 					lastObj=JSON.parse(str);
-					if(lastObj.type!='error'&&lastObj.uid){
-						router[lastObj.uid](lastObj.data,lastObj.uid);
+					if(lastObj.type!='error'&&lastObj.from_inetcore&&lastObj.uid){
+						router[lastObj.uid](lastObj.from_inetcore,lastObj.uid);
 					}else if(lastObj.responder){
 						initUser();
 					};
@@ -129,15 +129,15 @@
 			window.AppInventor.setWebViewString('{"FIX_form":"'+document.title+'"}');
 			
 			/*current Inetcore user*/
-			let inetcore={login:'default'};
+			let inetcore_user={login:'default'};
 			/*current user profile*/
 			let user={};
 			
 			function initUser(){
-				sendStr({inetcore:{type:'post',url:'/call/main/get_user_data',prm:null}},function(obj,uid){
-					inetcore.login=obj.username/*.toLowerCase()*/;
-					fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+inetcore.login).then(response=>response.json());
-					fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+inetcore.login).then(response=>response.json()).then(function(obj){
+				sendStr({type:'post',url:'/call/main/get_user_data',prm:null},function(obj,uid){
+					inetcore_user.login=obj.username/*.toLowerCase()*/;
+					fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+inetcore_user.login).then(response=>response.json());
+					fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+inetcore_user.login).then(response=>response.json()).then(function(obj){
 						user=obj.user;
 						document.addEventListener('DOMContentLoaded',function(event){ 
 						  initDocument();
@@ -162,7 +162,6 @@
 						document.getElementById('input_search').setAttribute('city','');
 					};
 				});
-				return {FIX_form:true};
 			};
 			function clsTiles(){
 				document.getElementById('btn_getTaskList').classList.add('hide');
@@ -182,7 +181,7 @@
 			function getTaskList(){
 				let taskTiles=document.getElementsByClassName('tile-task');while(taskTiles.length>0){taskTiles[0].remove()};
 				let site_id=document.getElementsByClassName('tile-building')[0].id;
-				fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList&login='+inetcore.login+'&key=site_id&value='+site_id).then(response=>response.json()).then(function(obj){
+				fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList&login='+inetcore_user.login+'&key=site_id&value='+site_id).then(response=>response.json()).then(function(obj){
 					for(let task of obj.task_list.filter(function(item){return item.task_state=='new'||item.task_state=='start'})){/*только активные*/
 						createTaskTile(task);
 					};
@@ -214,7 +213,7 @@
 			};			
 			function createNewTask(){
 				let url='https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec';
-				let prms='?action=addTask&login='+inetcore.login
+				let prms='?action=addTask&login='+inetcore_user.login
 				+'&address='+document.getElementById('input_search').value
 				+'&site_id='+document.getElementsByClassName('tile-building')[0].getAttribute('id')
 				+'&site_name='+document.getElementsByClassName('tile-building')[0].getAttribute('name')
@@ -375,7 +374,7 @@
 				getEntrances(buildingObj.data.id);
 			};
 			function getEntrances(siteid){/*сетка падиков*/
-				sendStr({inetcore:{type:'post',url:'/call/device/site_flat_list?fresh='+Math.random(),prm:{'siteid':siteid}}},function(entrances,uid){
+				sendStr({type:'post',url:'/call/device/site_flat_list?fresh='+Math.random(),prm:{'siteid':siteid}},function(entrances,uid){
 					if(entrances.type=='floors'||entrances.data.length>0){/*наличие падиков*/
 						for(let entrance of entrances.data.filter(function(item){return !item.nioss_error})){/*перебор падиков*/
 							document.getElementById(siteid+'.entrances').insertAdjacentHTML('beforeEnd',createEntrance(entrance));
@@ -418,7 +417,7 @@
 							};
 						};
 						tabController('first');
-						sendStr({inetcore:{type:'post',url:'/call/device/site_rack_list?fresh='+Math.random(),prm:{'siteid':siteid}}},function(racks,uid){
+						sendStr({type:'post',url:'/call/device/site_rack_list?fresh='+Math.random(),prm:{'siteid':siteid}},function(racks,uid){
 							for(let rack of racks.filter(function(item){return !item.nioss_error})){
 								let container=rack.ENTRANCE_ID+'.'+((rack.OFF_FLOR=='Подвал')?'podval':(rack.OFF_FLOR=='Чердак')?'cherdak':(rack.OFF_FLOR=='Технический этаж')?'tehetag':('floor_'+rack.FLOOR))+((isCU(rack.RACK_NAME))?'.rk':(isL(rack.RACK_NAME))?'.racks':'.racks');
 								if(!document.getElementById(container)){/*если шкаф на этаже вне подъезда*//*ду0000000054КР-02878*/
@@ -426,7 +425,7 @@
 								};
 								document.getElementById(container).insertAdjacentHTML('beforeEnd',createRack(rack));
 							};
-							sendStr({inetcore:{type:'post',url:'/call/device/devices?fresh='+Math.random(),prm:{'siteid':siteid}}},function(devices,uid){
+							sendStr({type:'post',url:'/call/device/devices?fresh='+Math.random(),prm:{'siteid':siteid}},function(devices,uid){
 								devices.map(function(device){
 									let inrack=document.getElementById(toKP(device.DEVICE_NAME));
 									if(inrack){/*если есть в шкафу*/
@@ -434,12 +433,12 @@
 									}else{
 										/*засунуть в фейковый шкаф, видимый из дома*/
 									};
-									sendStr({inetcore:{type:'post',url:'/call/hdm/device_ping?fresh='+Math.random(),prm:{'device':device}}},function(ping,uid){
+									sendStr({type:'post',url:'/call/hdm/device_ping?fresh='+Math.random(),prm:{'device':device}},function(ping,uid){
 										setPingLeds(device.DEVICE_NAME,ping.code);
 									});
 								});
 							});
-							sendStr({inetcore:{type:'post',url:'/call/device/patch_panels?fresh='+Math.random(),prm:{'siteid':siteid}}},function(plints,uid){
+							sendStr({type:'post',url:'/call/device/patch_panels?fresh='+Math.random(),prm:{'siteid':siteid}},function(plints,uid){
 								let ppanels=plints;for(let pp of ppanels){ppanels=ppanels.concat(pp.children);};/*поднятие из топологии*/
 								for(let pp of ppanels.filter(function(item){return !item.nioss_error})){
 									if(pp.rack_id=='0'){/*вне шкафа*//*type-PP without*/
