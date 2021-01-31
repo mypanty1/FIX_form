@@ -183,8 +183,8 @@
 					fetch('https://geocode-maps.yandex.ru/1.x/?format=json&apikey='+apikey+'&geocode='+pattern+'&result=1&lang=ru_RU').then(response=>response.json()).then(function(obj){
 						let coords=obj.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.replace(' ',',').split(',').reverse().join(',');/*55.03165,83.01073*/
 						if(coords){
-							/*searchByCoords(coords);*/
-							showError('coords');
+							searchByCoords(coords);
+							/*showError('coords');*/
 						}else{
 							showError('location error');
 						};
