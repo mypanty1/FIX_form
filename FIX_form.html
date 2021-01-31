@@ -140,6 +140,7 @@
 					fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+inetcore_user.login).then(response=>response.json());
 					fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+inetcore_user.login).then(response=>response.json()).then(function(obj){
 						user=obj.user;
+						console.log(JSON.stringify(obj.user));
 						initDocument(user);
 					});
 				});
@@ -148,16 +149,21 @@
 	</head>
 	<body>
 		<div class="mobile-tile tile-search">
-			<button type="button" class="btn" id="btn_clsAll">X</button>
-			<input type="checkbox" class="chkb" id="chkb_nsk" checked>
-			<input type="text" class="search-input" id="input_search" city="" value="" placeholder="">
-			<button type="button" class="btn" id="btn_search">поиск</button>
-			<button type="button" class="btn hide" id="btn_getTaskList">задачи</button>
+			<button type="button" class="btn" id="btn_clsAll" disabled>X</button>
+			<input type="checkbox" class="chkb" id="chkb_nsk" checked disabled>
+			<input type="text" class="search-input" id="input_search" city="" value="" placeholder="" disabled>
+			<button type="button" class="btn" id="btn_search" disabled>поиск</button>
+			<button type="button" class="btn hide" id="btn_getTaskList" disabled>задачи</button>
 			<script>
 				initUser();
 				
 				function initDocument(user){
 					console.log('initDocument');
+					document.getElementById('btn_clsAll').removeAttribute('disabled');
+					document.getElementById('chkb_nsk').removeAttribute('disabled');
+					document.getElementById('input_search').removeAttribute('disabled');
+					document.getElementById('btn_search').removeAttribute('disabled');
+					document.getElementById('btn_getTaskList').removeAttribute('disabled');
 					document.getElementById('input_search').setAttribute('placeholder','адрес в '+(user.city||'новосибирск'));
 					document.getElementById('input_search').setAttribute('city',(user.city||'новосибирск'));
 					document.getElementById('input_search').addEventListener('keydown',function(e){if(e.keyCode===13){document.getElementById('btn_search').click();}});
@@ -183,6 +189,7 @@
 					fetch('https://geocode-maps.yandex.ru/1.x/?format=json&apikey='+apikey+'&geocode='+pattern+'&result=1&lang=ru_RU').then(response=>response.json()).then(function(obj){
 						let coords=obj.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.replace(' ',',').split(',').reverse().join(',');/*55.03165,83.01073*/
 						if(coords){
+							console.log(coords);
 							searchByCoords(coords);
 						}else{
 							showError('location error');
@@ -261,6 +268,7 @@
 				function searchByCoords(pattern,cls=true){
 					if(cls){clsTiles()};/*костыль*/
 					sendStr({inetcore:{type:'post',url:'/call/device/search?fresh='+Math.random(),prm:{'pattern':pattern}}},function(result){
+						console.log(JSON.stringify(result));
 						if(result){
 							switch(result.key){
 								case'building':/*по имени узла*/
