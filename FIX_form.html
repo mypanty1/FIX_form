@@ -194,11 +194,7 @@
 			<button type="button" class="btn" id="btn_search">поиск</button>
 			<button type="button" class="btn hide" id="btn_getTaskList">задачи</button>
 			<script>
-				fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+app.login/*,{mode:'no-cors'}*/).then(response=>response.json());
-				fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+app.login).then(response=>response.json()).then(function(obj){
-					user=obj.user;
-					init();
-				});
+				init();
 			</script>
 		</div>
 	</body>
