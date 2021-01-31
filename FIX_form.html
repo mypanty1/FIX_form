@@ -120,6 +120,8 @@
 					lastObj=JSON.parse(str);
 					if(lastObj.type!='error'&&lastObj.uid){
 						router[lastObj.uid](lastObj.data,lastObj.uid);
+					}else if(lastObj.responder){
+						initUser();
 					};
 				};
 				readWebString=setTimeout(rws,timeout);
@@ -130,17 +132,19 @@
 			/*current user profile*/
 			let user={};
 			
-			sendStr({inetcore:{type:'post',url:'/call/main/get_user_data',prm:null}},function(obj,uid){
-				inetcore.login=obj.username/*.toLowerCase()*/;
-				fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+inetcore.login).then(response=>response.json());
-				fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+inetcore.login).then(response=>response.json()).then(function(obj){
-					user=obj.user;
-					document.addEventListener('DOMContentLoaded',function(event){ 
-					  initDocument();
+			function initUser(){
+				sendStr({inetcore:{type:'post',url:'/call/main/get_user_data',prm:null}},function(obj,uid){
+					inetcore.login=obj.username/*.toLowerCase()*/;
+					fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+inetcore.login).then(response=>response.json());
+					fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+inetcore.login).then(response=>response.json()).then(function(obj){
+						user=obj.user;
+						document.addEventListener('DOMContentLoaded',function(event){ 
+						  initDocument();
+						});
 					});
+					/*router[uid]=undefined;*/
 				});
-				/*router[uid]=undefined;*/
-			});
+			};
 			function initDocument(){
 				document.getElementById('input_search').setAttribute('placeholder','адрес в '+(user.city||'новосибирск'));
 				document.getElementById('input_search').setAttribute('city',(user.city||'новосибирск'));
