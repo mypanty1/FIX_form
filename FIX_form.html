@@ -102,10 +102,11 @@
 			let router={};
 			let timeout=1000;/*1sec*/
 			let lastStr='';
+			let last={};
 			let lastObj={};/*dev*/
 			function sendStr(to_inetcore=null,callback){
 				let uid='uid_'+Date.now();
-				router[uid]=callback;
+				last={uid:uid,f:callback};
 				let str=JSON.stringify({
 					'to_inetcore':to_inetcore,
 					'uid':uid,
@@ -119,10 +120,10 @@
 					lastStr=str;
 					lastObj=JSON.parse(str);
 					if(lastObj.type!='error'&&lastObj.from_inetcore&&lastObj.uid){
-						router[lastObj.uid](lastObj.from_inetcore,lastObj.uid);
-					}/*else if(lastObj.responder){
-						initUser();
-					}*/;
+						if(last.uid==lastObj.uid){
+							last.f(lastObj.from_inetcore);
+						};
+					};
 				};
 				readWebString=setTimeout(rws,timeout);
 			},timeout);
@@ -139,7 +140,7 @@
 			};
 			
 			function log(obj){
-				inetcore_user.login=obj.username/*.toLowerCase()*/;
+				inetcore_user.login=obj.username;
 				fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+inetcore_user.login).then(response=>response.json());
 				fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+inetcore_user.login).then(response=>response.json()).then(function(obj){
 					user=obj.user;
@@ -177,7 +178,8 @@
 				fetch('https://geocode-maps.yandex.ru/1.x/?format=json&apikey='+apikey+'&geocode='+pattern+'&result=1&lang=ru_RU').then(response=>response.json()).then(function(obj){
 					let coords=obj.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.replace(' ',',').split(',').reverse().join(',');/*55.03165,83.01073*/
 					if(coords){
-						searchByCoords(coords);
+						/*searchByCoords(coords);*/
+						showError('coords');
 					}else{
 						showError('location error');
 					};
