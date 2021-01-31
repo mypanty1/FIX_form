@@ -1,5 +1,5 @@
-javascript:(function(){if(document.title!='Inetcore FIX_form'&&(window.location.href.includes('https://fx.mts.ru')||window.location.href.includes('http://inetcore.mts.ru/fix')||window.location.href.includes('http://pre.inetcore.mts.ru/fix'))){
-	document.title = 'Inetcore FIX_form';
+javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.href.includes('https://fx.mts.ru')||window.location.href.includes('http://inetcore.mts.ru/fix')||window.location.href.includes('http://pre.inetcore.mts.ru/fix'))){
+	document.title='InetcoreResponder';
 	
 	/*app communication*/
 	let timeout=1000;/*1sec*/
@@ -38,5 +38,7 @@ javascript:(function(){if(document.title!='Inetcore FIX_form'&&(window.location.
 		};
 		readWebString=setTimeout(rws,timeout);
 	},timeout);
+	
+	window.AppInventor.setWebViewString('{"responder":"true"}');
 
 }else{console.log(document.title)}}());
