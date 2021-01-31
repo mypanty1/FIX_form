@@ -34,17 +34,17 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 						});
 					break;
 					case'uid_miss':
-						if(responses[jsonObj.uid]){
-							sendStr('data',responses[jsonObj.uid],jsonObj.uid);
+						if(responses[jsonObj.to_inetcore.uid]){
+							sendStr('data',responses[jsonObj.to_inetcore.uid],jsonObj.uid);
 						}else{
-							sendStr('error',jsonObj.uid,jsonObj.uid);
+							sendStr('error',jsonObj.to_inetcore.uid,jsonObj.uid);
 						};
 					break;
 					case'uid_ok':
-						if(responses[jsonObj.uid]){
-							responses[jsonObj.uid]=undefined;
+						if(responses[jsonObj.to_inetcore.uid]){
+							responses[jsonObj.to_inetcore.uid]=undefined;
 						}else{
-							sendStr('error',jsonObj.uid,jsonObj.uid);
+							sendStr('error',jsonObj.to_inetcore.uid,jsonObj.uid);
 						};
 					break;
 					default:
