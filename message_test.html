@@ -7,10 +7,13 @@
 		<style type="text/css"></style>
 	</head>
 	<body>
-		<div id="text"></div>
-		<div><input type="text" id="input" value="text from html"></div>
-		<div><input type="button" id="button" value="send" onclick="window.AppInventor.setWebViewString(document.getElementById('input').value)"></div>
+		<div id="text" style="width:100%"></div>
+		<input type="text" id="input" value="text from html" style="width:100%">
+		<input type="button" id="button" value="send" onclick="send();" style="width:100%">
 		<script>
+			function send(){
+				window.AppInventor.setWebViewString(document.getElementById('input').value);
+			};
 			var tId=setTimeout(function readWebString(){
 				document.getElementById('text').innerHTML=window.AppInventor.getWebViewString();
 				tId=setTimeout(readWebString,1000);/*1sec*/
