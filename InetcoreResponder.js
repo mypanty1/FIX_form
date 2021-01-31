@@ -5,6 +5,7 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 	let timeout=100;/*01sec*/
 	let lastStr='';
 	let uidData={};
+	let jsonObj={};
 	function sendStr(type='',from_inetcore=null,uid='unknown_'+Date.now()){
 		let str=JSON.stringify({
 			'from_inetcore':from_inetcore,
@@ -18,7 +19,7 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 		let str=window.AppInventor.getWebViewString();
 		if(str!=lastStr){
 			lastStr=str;
-			let jsonObj=JSON.parse(str);/*"{"to_inetcore":{"type":"post","url":"/call/main/get_user_data","prm":null},"uid":"uid_1612004586606"}"*/
+			jsonObj=JSON.parse(str);/*"{"to_inetcore":{"type":"post","url":"/call/main/get_user_data","prm":null},"uid":"uid_1612004586606"}"*/
 			if(jsonObj.uid&&jsonObj.to_inetcore){
 				switch(jsonObj.to_inetcore.type){
 					case'get':
@@ -41,11 +42,7 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 						};
 					break;
 					case'uid_ok':
-						if(uidData[jsonObj.to_inetcore.uid]){
-							uidData[jsonObj.to_inetcore.uid]=undefined;
-						}else{
-							sendStr('error',jsonObj.to_inetcore.uid,jsonObj.uid);
-						};
+						uidData[jsonObj.to_inetcore.uid]=false;
 					break;
 					default:
 						sendStr('error',jsonObj.to_inetcore,jsonObj.uid);

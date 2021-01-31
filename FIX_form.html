@@ -102,9 +102,10 @@
 			let timeout=100;/*01sec*/
 			let lastStr='';
 			let actions={};
+			let jsonObj={};
 			function sendStr(to_inetcore=null,callback){
 				let uid='uid_'+Date.now();
-				actions[uid]=((callback)?{action:callback}:undefined);
+				actions[uid]=((callback)?{action:callback}:false);
 				let str=JSON.stringify({
 					'to_inetcore':to_inetcore,
 					'uid':uid,
@@ -116,11 +117,11 @@
 				let str=window.AppInventor.getWebViewString();
 				if(str!=lastStr){
 					lastStr=str;
-					let jsonObj=JSON.parse(str);
+					jsonObj=JSON.parse(str);
 					if(jsonObj.type!='error'&&jsonObj.from_inetcore&&jsonObj.uid){
 						if(actions[jsonObj.uid]){
 							actions[jsonObj.uid].action(jsonObj.from_inetcore);
-							actions[jsonObj.uid]=undefined;sendStr({type:'uid_ok',uid:uid},false);
+							actions[jsonObj.uid]=false;sendStr({type:'uid_ok',uid:uid},false);
 							for(let uid in actions){
 								if(actions[uid]){sendStr({type:'uid_miss',uid:uid},false)};
 							};
