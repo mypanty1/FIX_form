@@ -8,8 +8,8 @@
 	</head>
 	<body>
 		<div id="text"></div>
-		<div><input type="text" id="input"></div>
-		<div><input type="button" id="button" onclick="window.AppInventor.setWebViewString(document.getElementById('input').value)"></div>
+		<div><input type="text" id="input" value="text from html"></div>
+		<div><input type="button" id="button" value="send" onclick="window.AppInventor.setWebViewString(document.getElementById('input').value)"></div>
 		<script>
 			var tId=setTimeout(function readWebString(){
 				document.getElementById('text').innerHTML=window.AppInventor.getWebViewString();
