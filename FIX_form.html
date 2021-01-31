@@ -98,15 +98,49 @@
 			.hide{display:none;}
 		</style>
 		<script type="text/javascript">
-			let app={login:'mypanty1'};
+			/*app communication*/
+			let router={};
+			let timeout=1000;/*1sec*/
+			let lastStr='';
+			let lastObj={};/*dev*/
+			function sendStr(data=null,callback){
+				let uid='uid_'+Date.now();
+				router[uid]=callback;
+				let str=JSON.stringify({
+					'data':data,
+					'uid':uid,
+				});
+				lastStr=str;
+				window.AppInventor.setWebViewString(str);
+			};
+			let readWebString=setTimeout(function rws(){
+				let str=window.AppInventor.getWebViewString();
+				if(str!=lastStr){
+					lastStr=str;
+					lastObj=JSON.parse(str);
+					if(lastObj.type!='error'&&lastObj.uid){
+						router[lastObj.uid](lastObj.data,lastObj.uid);
+					};
+				};
+				readWebString=setTimeout(rws,timeout);
+			},timeout);
+			
+			/*current user*/
+			let app={login:'default'};
+			/*current user profile*/
 			let user={};
-			function init(){
-				fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+app.login/*,{mode:'no-cors'}*/).then(response=>response.json());
+			
+			sendStr({inetcore:{type:'post',url:'/call/main/get_user_data',prm:null}},function(obj,uid){
+				app.login=obj.username/*.toLowerCase()*/;
+				fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+app.login).then(response=>response.json());
 				fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+app.login).then(response=>response.json()).then(function(obj){
 					user=obj.user;
-					initDocument();
+					document.addEventListener('DOMContentLoaded',function(event){ 
+					  initDocument();
+					});
 				});
-			};
+				/*router[uid]=undefined;*/
+			});
 			function initDocument(){
 				document.getElementById('input_search').setAttribute('placeholder','адрес в '+(user.city||'новосибирск'));
 				document.getElementById('input_search').setAttribute('city',(user.city||'новосибирск'));
@@ -115,7 +149,7 @@
 				document.getElementById('btn_clsAll').addEventListener('click',function(){clsTiles();document.getElementById('input_search').value='';});
 				document.getElementById('btn_getTaskList').addEventListener('click',getTaskList);
 				document.getElementById('chkb_nsk').addEventListener('change',function(e){
-					if(event.target.checked){
+					if(e.target.checked){
 						document.getElementById('input_search').setAttribute('placeholder','адрес в '+(user.city||'новосибирск'));
 						document.getElementById('input_search').setAttribute('city',(user.city||'новосибирск'));
 					}else{
@@ -134,9 +168,9 @@
 				fetch('https://geocode-maps.yandex.ru/1.x/?format=json&apikey='+apikey+'&geocode='+pattern+'&result=1&lang=ru_RU').then(response=>response.json()).then(function(obj){
 					let coords=obj.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.replace(' ',',').split(',').reverse().join(',');/*55.03165,83.01073*/
 					if(coords){
-						return coords;
+						searchByCoords(coords);
 					}else{
-						return 'location error';
+						showError('location error');
 					};
 				});
 			};
@@ -184,6 +218,398 @@
 					console.log('task_id',obj.task_id);getTaskList();
 				});
 			};
+			function showError(str){createErrorTile({'text':str})};/*обернуть ошибку*/
+			function createErrorTile(result){/*ошибку поиска*/
+				let newTile=`
+					<div class="mobile-tile tile `+((result.data)?('tile-unknown'):('tile-warning'))+`">
+						<div class="building-head">
+							`+result.text||result.pattern+`
+						</div>
+					</div>`;
+				document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile)
+			};
+			function createSelectBuildingTile(result){/*todo*/
+				let dataStr='';
+				for(let param in result.data){dataStr+=`<div>&nbsp;&nbsp;&nbsp;`+param+`:<span>`+result.data[param]+`</span></div>`};
+				let newTile=`
+					<div class="mobile-tile tile tile-select">
+						<div class="el-head">
+							<div>pattern:<span>`+result.pattern+`</span></div>
+							<div>key:<span>`+result.key+`</span></div>
+							<div>type:<span>`+result.type+`</span></div>
+							<div>data:</div>`
+							+dataStr+`
+						</div>
+					</div>`;
+				document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile)
+			};
+			function searchByCoords(pattern,cls=true){
+				if(cls){clsTiles()};/*костыль*/
+				sendStr({inetcore:{type:'post',url:'/call/device/search?fresh='+Math.random(),prm:{'pattern':pattern}}},function(result,uid){
+					if(result){
+						switch(result.key){
+							case'building':/*по имени узла*/
+								switch(result.type){
+									case'building':/*узел ду*/
+									case'building_mu':/*узел му*/
+										createBuildingTile(result);
+									break;
+									case'warning':/*ду000000054КР-00340*/
+									default:
+										createErrorTile(result);
+								};
+							break;
+							case'building_id':/*по id площадки*/
+								switch(result.type){
+									case'building_list':/*ду+му(или ду+ду?)*//*9135155037513569210*/
+										var DU_or_MU_only=result.data.filter(function(node){return node.type=='ДУ'||node.type=='МУ'});
+										if(DU_or_MU_only&&DU_or_MU_only.length>0){
+											createBuildingTile({'data':Object.assign(DU_or_MU_only[0],{'nodes':DU_or_MU_only})});
+										}else{
+											createSelectBuildingTile(result);
+										};
+									break;
+									case'building':/*ду*//*9135155037413562085*/
+									case'building_mu':/*узел му*//*8101638987013413752*/
+										createBuildingTile(result);
+									break;
+									default:
+										createErrorTile(result);
+								};
+							break;
+							case'coordinates':/*поиск по координатам*/
+								switch(result.type){
+									case'building':/*узел ду*/
+									case'building_mu':/*узел му*/
+										createBuildingTile(result);
+									break;
+									case'building_list':/*список узлов на адресе или рядом*//*55.037087,82.929278*/
+										createSelectBuildingTile(result);
+									break;
+									case'warning':/*нет узлов по координатам*/
+									default:
+										createErrorTile(result);
+								};
+							break;
+							case'device':/*поиск разрешенных устройств по имени Nioss*/
+								switch(result.type){
+									case'device':/*OP_25KR_00853_1*/
+										createErrorTile(result);
+									break;
+									case'warning':/*OP_25KR_00853_5*/
+									default:
+										createErrorTile(result);
+								};
+							break;
+							case'port':/*поиск порта по имени Smarts*/
+								switch(result.type){
+									case'port':/*PORT-ETH_KR_54_02227_1/1*/
+										createErrorTile(result);
+									break;
+									case'warning':/*PORT-ETH_KR_54_02227_1/16*/
+									default:
+										createErrorTile(result);
+								};
+							break;
+							case'ip':/*поиск устройства по ip*/
+								switch(result.type){
+									case'list':/*10.221.168.14*//*порты 10.70.18.110*/
+									case'device':/*10.221.185.133*/
+										createErrorTile(result);
+									break;
+									case'warning':/*10.70.34.67*/
+									default:
+										createErrorTile(result);
+								};
+							break;
+							case'mac':/*поиск по маку*/
+								switch(result.type){
+									case'mac':
+										createErrorTile(result);
+									break;
+									case'warning':/*08c6.b3c0.397d*/
+									default:
+										createErrorTile(result);
+								};
+							break;
+							case'account':/*поиск по лс*/
+								switch(result.type){
+									case'list':/*список дублей по регионам*//*2-042-0023253*//*нет, list возвращает lbsv*/
+									case'account':/*абонент*/
+										createErrorTile(result);
+									break;
+									case'warning':/*6-091-0000000*/
+									default:
+										createErrorTile(result);;
+								};
+							break;
+							default:
+								createErrorTile(result);
+						};
+					}else{
+						showError(pattern);
+					};
+				});
+			};
+			function createBuildingTile(buildingObj){/*building*/
+				function trimAddress(addr){let addrArr=addr.split(', ').reverse();return addrArr[1].replace(/\s/g,'')+' '+addrArr[0].replace(/\s/g,'')};
+				document.getElementById('input_search').value=trimAddress(buildingObj.data.address);
+				let newTile=`
+					<div class="mobile-tile tile tile-building" id="`+buildingObj.data.id+`" name="`+buildingObj.data.name+`">
+						<div class="tab-controller">
+							<div class="title">подъезды:</div>
+							<div class="btns-row-scroll">
+								<div class="btns-row" id="`+buildingObj.data.id+`.selector"><!--кнопки подъездов--></div>
+							</div>
+						</div>
+						<div class="entrances-row" id="`+buildingObj.data.id+`.entrances"><!--табы подъездов--></div>
+					</div>`;
+				if(document.getElementById(buildingObj.data.id)){document.getElementById(buildingObj.data.id).remove()};/*удалить дубль если есть*/
+				document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile);
+				document.getElementById('btn_getTaskList').classList.remove('hide');
+				getEntrances(buildingObj.data.id);
+			};
+			function getEntrances(siteid){/*сетка падиков*/
+				sendStr({inetcore:{type:'post',url:'/call/device/site_flat_list?fresh='+Math.random(),prm:{'siteid':siteid}}},function(entrances,uid){
+					if(entrances.type=='floors'||entrances.data.length>0){/*наличие падиков*/
+						for(let entrance of entrances.data.filter(function(item){return !item.nioss_error})){/*перебор падиков*/
+							document.getElementById(siteid+'.entrances').insertAdjacentHTML('beforeEnd',createEntrance(entrance));
+							tabController('add',siteid,entrance);
+							for(let floor of entrance.floor){/*перебор этажей*/
+								document.getElementById(entrance.ENTRANCE_ID+((+floor.number>0)?'.over':'.under')).insertAdjacentHTML('beforeEnd',createFloor(entrance.ENTRANCE_ID,floor.number,'',floor.first,floor.last,floor.flats));
+								for(let flat of floor.flats){/*перебор хат*/
+									let flatHtml=document.getElementById(entrance.ENTRANCE_ID+'.flat_'+flat.number);
+									flatHtml.classList.add('flat-service');
+									for(let service of flat.services){/*перебор услуг в квартире*/
+										switch(service.service_id){
+											case'1':
+												flatHtml.classList.add('service-inet');
+												document.getElementById(entrance.ENTRANCE_ID+'.flat_'+flat.number+'.spd').classList.add(service.status);
+											break;
+											case'2':
+											case'4':
+											case'16':
+												flatHtml.classList.add('service-tv');
+												document.getElementById(entrance.ENTRANCE_ID+'.flat_'+flat.number+'.tv').classList.add(service.status);
+											break;
+											case'8':
+												flatHtml.classList.add('service-voip');
+												document.getElementById(entrance.ENTRANCE_ID+'.flat_'+flat.number+'.spd').classList.add(service.status);
+											break;
+											default:
+												flatHtml.classList.add('service-unknown');
+												document.getElementById(entrance.ENTRANCE_ID+'.flat_'+flat.number+'.tv').classList.add(service.status);
+										};
+									};
+									for(let account of flat.subscribers){
+										flatHtml.classList.add('account_'+account.account.match(/\d/g).join(''));
+									};
+								};
+							};
+							if(entrance.floor.length<=entrance.FLOOR_COUNT){/*фейковые этажи для выравнивание падиков по низу*/
+								for(var f_number=0;f_number<entrance.floor[0].number;f_number++){
+									document.getElementById(entrance.ENTRANCE_ID+((f_number>0)?'.over':'.under')).insertAdjacentHTML('beforeEnd',createFloor(entrance.ENTRANCE_ID,f_number));
+								};
+							};
+						};
+						tabController('first');
+						sendStr({inetcore:{type:'post',url:'/call/device/site_rack_list?fresh='+Math.random(),prm:{'siteid':siteid}}},function(racks,uid){
+							for(let rack of racks.filter(function(item){return !item.nioss_error})){
+								let container=rack.ENTRANCE_ID+'.'+((rack.OFF_FLOR=='Подвал')?'podval':(rack.OFF_FLOR=='Чердак')?'cherdak':(rack.OFF_FLOR=='Технический этаж')?'tehetag':('floor_'+rack.FLOOR))+((isCU(rack.RACK_NAME))?'.rk':(isL(rack.RACK_NAME))?'.racks':'.racks');
+								if(!document.getElementById(container)){/*если шкаф на этаже вне подъезда*//*ду0000000054КР-02878*/
+									document.getElementById(rack.ENTRANCE_ID+((rack.OFF_FLOR=='Подвал'||rack.FLOOR<=0)?'.under':'.over')).insertAdjacentHTML('beforeEnd',createFloor(rack.ENTRANCE_ID,rack.FLOOR,((rack.OFF_FLOR=='Подвал')?'podval':(rack.OFF_FLOR=='Чердак')?'cherdak':(rack.OFF_FLOR=='Технический этаж')?'tehetag':'')));
+								};
+								document.getElementById(container).insertAdjacentHTML('beforeEnd',createRack(rack));
+							};
+							sendStr({inetcore:{type:'post',url:'/call/device/devices?fresh='+Math.random(),prm:{'siteid':siteid}}},function(devices,uid){
+								devices.map(function(device){
+									let inrack=document.getElementById(toKP(device.DEVICE_NAME));
+									if(inrack){/*если есть в шкафу*/
+										document.getElementById(inrack.getAttribute('inrack')+'.devices_ne').insertAdjacentHTML('beforeEnd',createDevice(device));
+									}else{
+										/*засунуть в фейковый шкаф, видимый из дома*/
+									};
+									sendStr({inetcore:{type:'post',url:'/call/hdm/device_ping?fresh='+Math.random(),prm:{'device':device}}},function(ping,uid){
+										setPingLeds(device.DEVICE_NAME,ping.code);
+									});
+								});
+							});
+							sendStr({inetcore:{type:'post',url:'/call/device/patch_panels?fresh='+Math.random(),prm:{'siteid':siteid}}},function(plints,uid){
+								let ppanels=plints;for(let pp of ppanels){ppanels=ppanels.concat(pp.children);};/*поднятие из топологии*/
+								for(let pp of ppanels.filter(function(item){return !item.nioss_error})){
+									if(pp.rack_id=='0'){/*вне шкафа*//*type-PP without*/
+										let container=pp.entrance_id+'.floor_'+pp.n_floor+'.rk';
+										if(!document.getElementById(container)){/*если на этаже вне подъезда*/
+											document.getElementById(pp.entrance_id+((pp.n_floor<=0)?'.under':'.over')).insertAdjacentHTML('beforeEnd',createFloor(pp.entrance_id,pp.n_floor));
+										};
+										document.getElementById(container).insertAdjacentHTML('beforeEnd',createPP(pp));
+									}else{
+										let container=document.getElementById(pp.rack_id+'.devices_pp');
+										if(container){/*если есть такой шкаф*/
+											container.insertAdjacentHTML('beforeEnd',createPP(pp));
+										}else{
+											/*засунуть в фейковый шкаф, видимый из подъезда*/
+										};
+									};
+								};
+							});
+						});
+						
+					}else if(entrances.type=='flats'){
+						/*нет падиков, забить так-как почти везде уже есть подъезды*/
+						console.log('entrances.type==flats');
+					}else{
+						/*?*/
+						console.log(entrances.type);
+					};
+				});
+			};
+			function createEntrance(entranceObj){/*падик*/
+				return `
+					<div class="entrance-tab" id="`+entranceObj.ENTRANCE_ID+`_tab">
+						<div class="entrance" id="`+entranceObj.ENTRANCE_ID+`">
+							<div class="entrance-head">
+								<div class="entrance-title">
+									`+entranceObj.ENTRANCE_NAME+`
+									<input type="text" class="el-input input-2dig" style="width:15px;margin-left:5px;" value="`+entranceObj.ENTRANCE_NO+`" disabled>
+								</div>
+								<div>
+									<input type="text" class="el-input input-2dig" style="width:15px;" value="`+entranceObj.FLOOR_COUNT+`" disabled>
+									<input type="text" class="el-input input-4dig" style="width:30px;margin-left:10px;" value="`+entranceObj.FLAT_FROM+`" disabled>
+									<input type="text" class="el-input input-4dig" style="width:30px;margin-left:5px;" value="`+entranceObj.FLAT_TO+`" disabled>
+								</div>
+							</div>
+							<div class="floors-over" id="`+entranceObj.ENTRANCE_ID+`.over">
+								`+createFloor(entranceObj.ENTRANCE_ID,'','cherdak')+`
+								`+createFloor(entranceObj.ENTRANCE_ID,'','tehetag')+`
+							</div>
+							<div class="floors-under" id="`+entranceObj.ENTRANCE_ID+`.under">
+								`+createFloor(entranceObj.ENTRANCE_ID,'','podval')+`
+							</div>
+						</div>
+					</div>`;
+			};
+			function tabController(action,siteid,entrance){
+				switch(action){
+					case'add':
+						document.getElementById(siteid+'.selector').insertAdjacentHTML('beforeEnd',`<button type="button" class="tab-btn" id="`+entrance.ENTRANCE_ID+`_btn" style="order:`+entrance.ENTRANCE_NO+`;">`+entrance.ENTRANCE_NO+`</button>`);
+						document.getElementById(entrance.ENTRANCE_ID+'_btn').addEventListener('click',function(){tabController('select',siteid,entrance)});
+						/*tabController('select',siteid,entrance);*//*замена на first*/
+					break;
+					case'select':
+						for(let tab of document.getElementsByClassName('entrance-tab')){tab.classList.add('hide');};
+						document.getElementById(entrance.ENTRANCE_ID+'_tab').classList.remove('hide');
+						for(let btn of document.getElementsByClassName('tab-btn')){btn.removeAttribute('disabled');};
+						document.getElementById(entrance.ENTRANCE_ID+'_btn').setAttribute('disabled','');
+					break;
+					case'first':
+						for(let tab of document.getElementsByClassName('entrance-tab')){tab.classList.add('hide');};
+						document.getElementsByClassName('entrance-tab')[0].classList.remove('hide');
+						for(let btn of document.getElementsByClassName('tab-btn')){btn.removeAttribute('disabled');};
+						document.getElementsByClassName('tab-btn')[0].setAttribute('disabled','');
+					break;
+				};
+			};
+			function createFloor(entrance_id,number='0',type='',floor_first=0,floor_last=0,flats=[]){/*этаж падика*/
+				let floor={
+					'cherdak':{name:'cherdak',order:'1001',title:'Ч',flats:createNoFlats('чердак')},
+					'tehetag':{name:'tehetag',order:'1000',title:'Т',flats:createNoFlats('тех. этаж')},
+					'podval':{name:'podval',order:'1000',title:'П',flats:createNoFlats('подвал')},
+					'':{
+						name:'floor_'+number,
+						order:((Math.abs(+number)+10)*10),
+						title:number,
+						flats:((floor_first&&floor_last||flats.length>0)?createEmptyFlats(floor_first,floor_last):createNoFlats()),
+					},
+				}[type];
+				function createNoFlats(name=''){return `<div class="flat-none">`+name+`</div>`};
+				function createEmptyFlats(f_first,f_last){/*заготовки квартир на этаж*/
+					let newFlatsRow='';
+					for(let flat=f_first;flat<f_last+1;flat++){
+						newFlatsRow+=`<div class="flat" id="`+entrance_id+`.flat_`+flat+`" style="order:`+flat+`;">
+							<div>`+flat+`</div>
+							<div class="service" id="`+entrance_id+`.flat_`+flat+`.spd">шпд</div>
+							<div class="service" id="`+entrance_id+`.flat_`+flat+`.tv">тв</div>
+						</div>`
+					};		
+					return newFlatsRow;
+				};
+				return `
+					<div class="floor" id="`+entrance_id+`.`+floor.name+`" style="order:`+floor.order+`;">
+						<div class="floor-number">`+floor.title+`</div>
+						<div class="floor-objects" id="`+entrance_id+`.`+floor.name+`.objects">
+							<div class="floor-racks" id="`+entrance_id+`.`+floor.name+`.racks"></div>
+							<div class="floor-racks" id="`+entrance_id+`.`+floor.name+`.rk"></div>
+							<div class="floor-flats" id="`+entrance_id+`.`+floor.name+`.flats">
+								`+floor.flats+`
+							</div>
+						</div>
+					</div>`;
+			};
+			function createRack(rackObj){/*шкаф*/
+				/*let kpname=toKP(rackObj.RACK_NAME);*/
+				let devices_ne=``;
+				let devices_pp=``;
+				for(let device of rackObj.NE_IN_RACK){
+					if(isPP(device)||isCR(device)){
+						devices_pp+=createPP({name:device,inrack:rackObj.RACK_NAME});
+					}else{
+						devices_ne+=createDevice({DEVICE_NAME:device,inrack:rackObj.RACK_NAME});
+					};
+				};
+				let title=`<span class="title-norm">`+rackObj.RACK_NAME+`</span><span class="title-short">`+createRackTitle(rackObj)+`</span>`;
+				return `
+					<div class="rack `+((rackObj.RACK_NAME)?(`type-`+getType(rackObj.RACK_NAME)):`type-unknown`)+`" id="`+rackObj.RACK_ID+`" style="order:`+((rackObj.N_RACK_SITE)?rackObj.N_RACK_SITE:getNum(rackObj.RACK_NAME))+`;" title="`+rackObj.RACK_NAME+`">
+						<div class="rack-head">
+							<div class="rack-title">`+title+`</div>
+						</div>
+						<div class="rack-devices" id="`+rackObj.RACK_NAME+`.devices_ne">`+devices_ne+`</div>
+						<div class="rack-devices" id="`+rackObj.RACK_ID+`.devices_pp">`+devices_pp+`</div>
+					</div>`;
+			};
+			function createPP(ppObj){/*патчпанель*/
+				let kpname=toKP(ppObj.name);
+				if(document.getElementById(kpname)){document.getElementById(kpname).remove();};/*удаление ранее созданного от шкафа*/
+				let title=`<span class="title-norm">`+kpname+`</span><span class="title-short">`+createPPTitle(ppObj)+`</span>`;
+				let inrack=(ppObj.inrack)?(`inrack="`+ppObj.inrack+`"`):'';
+				return `
+					<div class="device type-`+getType(kpname)+((ppObj.rack_id=='0')?` without`:``)+`" id="`+kpname+`" `+inrack+` title="`+kpname+`">
+						<div class="device-head">
+							<div class="device-title">`+title+`</div>
+						</div>
+					</div>`;
+			};
+			function createDevice(deviceObj){/*устройство*/
+				let kpname=toKP(deviceObj.DEVICE_NAME);
+				if(document.getElementById(kpname)){document.getElementById(kpname).remove();};/*удаление ранее созданного от шкафа*/
+				let title=`<span class="title-norm">`+createDeviceTitleIP(deviceObj)+`</span><span class="title-short">`+createDeviceTitle(deviceObj)+`</span>`;
+				let inrack=(deviceObj.inrack)?(`inrack="`+deviceObj.inrack+`"`):'';
+				return `
+					<div class="device type-`+getType(kpname)+`" id="`+kpname+`" `+inrack+` title="`+kpname+`">
+						<div class="device-head">
+							<div class="device-led" id="`+kpname+`.ping"></div>
+							<div class="device-title">`+title+`</div>
+						</div>
+					</div>`;
+			};
+			function setPingLeds(name,code){
+				let device=document.getElementById(toKP(name)+'.ping');
+				if(device){
+					device.classList.remove('online','offline','nomon');
+					switch(code){
+						case'200':
+							device.classList.add('online');
+						break;
+						case'400':
+							device.classList.add('offline');
+						break;
+						default:
+							device.classList.add('nomon')
+					};
+				};
+			};
+			
+			
 		</script>
 	</head>
 	<body>
@@ -193,9 +619,7 @@
 			<input type="text" class="search-input" id="input_search" city="" value="" placeholder="">
 			<button type="button" class="btn" id="btn_search">поиск</button>
 			<button type="button" class="btn hide" id="btn_getTaskList">задачи</button>
-			<script>
-				init();
-			</script>
+			<script></script>
 		</div>
 	</body>
 </html>
