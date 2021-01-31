@@ -38,7 +38,7 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 		};
 		readWebString=setTimeout(rws,timeout);
 	},timeout);
-	
+	document.getElementsByTagName('body')[0].insertAdjacentHTML('afterBegin',`<div>`+document.title+`</div>`);
 	window.AppInventor.setWebViewString('{"responder":"'+document.title+'"}');
 
 }else{console.log(document.title)}}());
