@@ -39,6 +39,6 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 		readWebString=setTimeout(rws,timeout);
 	},timeout);
 	
-	window.AppInventor.setWebViewString('{"responder":"true"}');
+	window.AppInventor.setWebViewString('{"responder":"'+document.title+'"}');
 
 }else{console.log(document.title)}}());
