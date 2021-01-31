@@ -449,7 +449,7 @@
 										}else{
 											/*засунуть в фейковый шкаф, видимый из дома*/
 										};
-										sendStr({type:'post',url:'/call/hdm/device_ping',prm:{'device':device}},function(ping){
+										sendStr({type:'post',url:'/call/hdm/device_ping?fresh='+Math.random(),prm:{'device':device}},function(ping){
 											setPingLeds(device.DEVICE_NAME,ping.code);
 										});
 									});
