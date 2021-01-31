@@ -126,6 +126,7 @@
 				};
 				readWebString=setTimeout(rws,timeout);
 			},timeout);
+			window.AppInventor.setWebViewString('{"FIX_form":"'+document.title+'"}');
 			
 			/*current Inetcore user*/
 			let inetcore={login:'default'};
