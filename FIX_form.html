@@ -628,6 +628,21 @@
 						};
 					};
 				};
+				function getType(name){return name.replace(/\W/g,'_').split('_')[0]};/*тип устройства*/
+				function getNum(name){return name.replace(/\W/g,'_').split('_').reverse()[0]};/*номер устройства*/
+				function toKP(name){return name.replace('KR','КР')};/*to Ru*/
+				function toKR(name){return name.replace('КР','KR')};/*to En*/
+				function isETH(name){return(getType(name)=='ETH')?true:false};
+				function isOP(name){return(getType(name)=='OP')?true:false};
+				/*function createDeviceTitleIP(d){return (d.IP_ADDRESS)?(createDeviceTitle(d)+'&nbsp;'+d.IP_ADDRESS):toKP(d.DEVICE_NAME)};*//*ETH#14 10.221.153.168*/
+				function createDeviceTitleIP(d){return (d.IP_ADDRESS)?(getType(d.DEVICE_NAME)+'&nbsp;'+d.IP_ADDRESS):toKP(d.DEVICE_NAME)};/*ETH 10.221.153.168*/
+				function createDeviceTitle(d){return getType(d.DEVICE_NAME)+'#'+getNum(d.DEVICE_NAME)};/*ETH#12*//*A#02*/
+				function isPP(name){return(getType(name)=='PP')?true:false};
+				function isCR(name){return(getType(name)=='CR')?true:false};
+				function createPPTitle(p){return getType(p.name)+'#'+getNum(p.name)};/*PP#34*//*CR#202*/
+				function createRackTitle(r){return getType(r.RACK_NAME)+'#'+getNum(r.RACK_NAME)};/*L#2*//*CU#46*/
+				function isL(name){return(getType(name)=='L')?true:false};
+				function isCU(name){return(getType(name)=='CU')?true:false};
 			</script>
 		</div>
 	</body>
