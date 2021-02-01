@@ -23,7 +23,7 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 			if(jsonObj.uid&&jsonObj.to_inetcore){
 				switch(jsonObj.to_inetcore.type){
 					case'echo':
-						sendStr('echo','ok',jsonObj.uid);
+						sendStr('data','echo_ok',jsonObj.uid);
 					break;
 					case'get':
 						httpGet(jsonObj.to_inetcore.url,true).then(function(data){
@@ -38,17 +38,13 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 						});
 					break;
 					case'uid_miss':
-						if(uidData[jsonObj.to_inetcore.uid]){
-							sendStr('data',uidData[jsonObj.to_inetcore.uid],jsonObj.uid);
-						}else{
-							sendStr('error',jsonObj.to_inetcore.uid,jsonObj.uid);
-						};
+						sendStr('data',uidData[jsonObj.to_inetcore.uid_miss]||false,jsonObj.uid);
 					break;
 					case'uid_ok':
-						uidData[jsonObj.to_inetcore.uid]=false;
+						uidData[jsonObj.to_inetcore.uid_ok]=false;
 					break;
 					default:
-						sendStr('error',jsonObj.to_inetcore,jsonObj.uid);
+						sendStr('type-error',jsonObj.to_inetcore,jsonObj.uid);
 				};
 			};
 		};

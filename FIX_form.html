@@ -118,18 +118,18 @@
 				if(str!=lastStr){
 					lastStr=str;
 					jsonObj=JSON.parse(str);
-					if(jsonObj.type!='error'&&jsonObj.from_inetcore&&jsonObj.uid){
+					if(jsonObj.type=='data'&&jsonObj.from_inetcore&&jsonObj.uid){
 						if(actions[jsonObj.uid]){
-							actions[jsonObj.uid].action(jsonObj.from_inetcore);
-							actions[jsonObj.uid].action=false;
-							sendStr({type:'uid_ok',uid:jsonObj.uid},false);
+							if(actions[jsonObj.uid].action){
+								actions[jsonObj.uid].action(jsonObj.from_inetcore);
+								actions[jsonObj.uid].action=false;
+							};
 						};
-					}else{
-						console.log(JSON.stringify(jsonObj));
+						sendStr({type:'uid_ok',uid_ok:jsonObj.uid},false);
 					};
 				};
 				for(let uid_miss in actions){
-					if(actions[uid_miss].action){sendStr({type:'uid_miss',uid:uid_miss},false)};
+					if(actions[uid_miss].action){sendStr({type:'uid_miss',uid_miss:uid_miss},false)};
 				};
 				readWebString=setTimeout(rws,timeout);
 			},timeout);
