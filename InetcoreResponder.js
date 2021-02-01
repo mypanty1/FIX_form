@@ -1,6 +1,6 @@
 javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.href.includes('https://fx.mts.ru')||window.location.href.includes('http://inetcore.mts.ru/fix')||window.location.href.includes('http://pre.inetcore.mts.ru/fix'))){
 	document.title='InetcoreResponder';
-	/*1809*/
+	/*1818*/
 	/*app communication*/
 	let timeout=1000;/*01sec*/
 	let lastStr='';
@@ -39,7 +39,8 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 						});
 					break;
 					case'uid_miss':/*"{"to_inetcore":{"type":"uid_miss","uid_miss":"uid-1612004586111"},"uid":"uid-1612004586222"}"*/
-						sendStr('data',uidData[jsonObj.to_inetcore.uid_miss],jsonObj.uid);
+						/*sendStr('data',uidData[jsonObj.to_inetcore.uid_miss],jsonObj.uid);*/
+						sendStr('data',uidData[jsonObj.to_inetcore.uid_miss],jsonObj.to_inetcore.uid_miss);
 					break;
 					case'uid_ok':/*"{"to_inetcore":{"type":"uid_ok","uid_ok":"uid-1612004586111"},"uid":"no_uid"}"*/
 						uidData[jsonObj.to_inetcore.uid_ok]=false;
