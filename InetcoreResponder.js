@@ -22,6 +22,9 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 			jsonObj=JSON.parse(str);/*"{"to_inetcore":{"type":"post","url":"/call/main/get_user_data","prm":null},"uid":"uid_1612004586606"}"*/
 			if(jsonObj.uid&&jsonObj.to_inetcore){
 				switch(jsonObj.to_inetcore.type){
+					case'echo':
+						sendStr('echo','ok',jsonObj.uid);
+					break;
 					case'get':
 						httpGet(jsonObj.to_inetcore.url,true).then(function(data){
 							uidData[jsonObj.uid]=data;
@@ -36,11 +39,7 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 					break;
 					case'uid_miss':
 						if(uidData[jsonObj.to_inetcore.uid]){
-							if(uidData[jsonObj.to_inetcore.uid]=='uid_echo'){
-								sendStr('echo','responder ok','uid_echo');
-							}else{
-								sendStr('data',uidData[jsonObj.to_inetcore.uid],jsonObj.uid);
-							};
+							sendStr('data',uidData[jsonObj.to_inetcore.uid],jsonObj.uid);
 						}else{
 							sendStr('error',jsonObj.to_inetcore.uid,jsonObj.uid);
 						};
