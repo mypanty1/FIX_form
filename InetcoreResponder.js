@@ -19,28 +19,28 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 		let str=window.AppInventor.getWebViewString();
 		if(str!=lastStr){
 			lastStr=str;
-			jsonObj=JSON.parse(str);/*"{"to_inetcore":{"type":"post","url":"/call/main/get_user_data","prm":null},"uid":"uid_1612004586606"}"*/
+			jsonObj=JSON.parse(str);
 			if(jsonObj.uid&&jsonObj.to_inetcore){
 				switch(jsonObj.to_inetcore.type){
-					case'echo':
+					case'echo':/*"{"to_inetcore":{"type":"echo"},"uid":"uid-1612004586606"}"*/
 						sendStr('data','echo_ok',jsonObj.uid);
 					break;
-					case'get':
+					case'get':/*"{"to_inetcore":{"type":"get","url":"/call/main/get_user_data","prm":null},"uid":"uid-1612004586606"}"*/
 						httpGet(jsonObj.to_inetcore.url,true).then(function(data){
 							uidData[jsonObj.uid]=data;
 							sendStr('data',data,jsonObj.uid);
 						});
 					break;
-					case'post':
+					case'post':/*"{"to_inetcore":{"type":"post","url":"/call/main/get_user_data","prm":null},"uid":"uid-1612004586606"}"*/
 						httpPost(jsonObj.to_inetcore.url,jsonObj.to_inetcore.prm,true).then(function(data){
 							uidData[jsonObj.uid]=data;
 							sendStr('data',data,jsonObj.uid);
 						});
 					break;
-					case'uid_miss':
+					case'uid_miss':/*"{"to_inetcore":{"type":"uid_miss","uid_miss":"uid-1612004586111"},"uid":"no_uid"}"*/
 						sendStr('data',uidData[jsonObj.to_inetcore.uid_miss]||false,jsonObj.uid);
 					break;
-					case'uid_ok':
+					case'uid_ok':/*"{"to_inetcore":{"type":"uid_ok","uid_ok":"uid-1612004586111"},"uid":"no_uid"}"*/
 						uidData[jsonObj.to_inetcore.uid_ok]=false;
 					break;
 					default:

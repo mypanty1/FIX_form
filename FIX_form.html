@@ -117,18 +117,18 @@
 				if(str!=lastStr){
 					lastStr=str;
 					jsonObj=JSON.parse(str);
-					if(jsonObj.type=='data'&&jsonObj.from_inetcore&&jsonObj.uid){
+					if(jsonObj.type=='data'&&jsonObj.from_inetcore&&jsonObj.uid&&jsonObj.uid!='no_uid'){
 						if(actions[jsonObj.uid]){
 							if(actions[jsonObj.uid].action){
 								actions[jsonObj.uid].action(jsonObj.from_inetcore);
 								actions[jsonObj.uid].action=false;
 							};
 						};
-						sendStr({type:'uid_ok',uid_ok:jsonObj.uid},false);
+						sendStr({type:'uid_ok',uid_ok:jsonObj.uid},false,'no_uid');
 					};
 				};
 				for(let uid_miss in actions){
-					if(actions[uid_miss].action){sendStr({type:'uid_miss',uid_miss:uid_miss},false)};
+					if(uid_miss!='no_uid'&&actions[uid_miss].action){sendStr({type:'uid_miss',uid_miss:uid_miss},false,'no_uid')};
 				};
 				readWebString=setTimeout(rws,timeout);
 			},timeout);
@@ -642,7 +642,7 @@
 		</script>
 	</head>
 	<body>
-		<div>1531</div>
+		<div>1702</div>
 		<div class="mobile-tile tile-search">
 			<button type="button" class="btn" id="btn_clsAll" disabled>X</button>
 			<input type="checkbox" class="chkb" id="chkb_nsk" checked disabled>
