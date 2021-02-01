@@ -99,12 +99,11 @@
 		</style>
 		<script type="text/javascript">
 			/*app communication*/
-			let timeout=100;/*01sec*/
+			let timeout=1000;/*01sec*/
 			let lastStr='';
 			const actions={};
 			let jsonObj={};
-			function sendStr(to_inetcore=null,callback){
-				let new_uid='uid_'+Date.now();
+			function sendStr(to_inetcore=null,callback,new_uid='uid-'+Date.now()){
 				actions[new_uid]={action:callback};
 				let str=JSON.stringify({
 					'to_inetcore':to_inetcore,
@@ -643,7 +642,7 @@
 		</script>
 	</head>
 	<body>
-		<div>1513</div>
+		<div>1531</div>
 		<div class="mobile-tile tile-search">
 			<button type="button" class="btn" id="btn_clsAll" disabled>X</button>
 			<input type="checkbox" class="chkb" id="chkb_nsk" checked disabled>

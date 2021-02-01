@@ -2,11 +2,11 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 	document.title='InetcoreResponder';
 	
 	/*app communication*/
-	let timeout=100;/*01sec*/
+	let timeout=1000;/*01sec*/
 	let lastStr='';
 	const uidData={};
 	let jsonObj={};
-	function sendStr(type='',from_inetcore=null,uid='unknown_'+Date.now()){
+	function sendStr(type='',from_inetcore=null,uid='unknown-'+Date.now()){
 		let str=JSON.stringify({
 			'from_inetcore':from_inetcore,
 			'type':type,
