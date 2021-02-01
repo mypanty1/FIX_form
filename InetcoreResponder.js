@@ -1,6 +1,6 @@
 javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.href.includes('https://fx.mts.ru')||window.location.href.includes('http://inetcore.mts.ru/fix')||window.location.href.includes('http://pre.inetcore.mts.ru/fix'))){
 	document.title='InetcoreResponder';
-	/*2046*/
+	/*2125*/
 	/*app communication*/
 	let timeout=1000;/*01sec*/
 	let lastStr='';
