@@ -145,13 +145,13 @@
 			function echo_inetcore(){
 				sendStr({type:'echo_inetcore'},function(state){
 					if(state=='inetcore_ok'){
-						get_user(ob);
+						get_user();
 					}else{
 						echo_inetcore();
 					};
 				});
 			};
-			function get_user(ob){
+			function get_user(){
 				sendStr({type:'post',url:'/call/main/get_user_data',prm:null},function(obj){
 					if(obj){
 						inetcore_user.login=obj.username;
@@ -162,7 +162,7 @@
 							initDocument(user);
 						});
 					}else{
-						get_user(ob);
+						get_user();
 					};
 				});
 			};
@@ -658,7 +658,7 @@
 		</script>
 	</head>
 	<body>
-		<div>2030</div>
+		<div>2035</div>
 		<div class="mobile-tile tile-search">
 			<button type="button" class="btn" id="btn_clsAll" disabled>X</button>
 			<input type="checkbox" class="chkb" id="chkb_nsk" checked disabled>

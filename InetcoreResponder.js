@@ -1,12 +1,12 @@
 javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.href.includes('https://fx.mts.ru')||window.location.href.includes('http://inetcore.mts.ru/fix')||window.location.href.includes('http://pre.inetcore.mts.ru/fix'))){
 	document.title='InetcoreResponder';
-	/*2030*/
+	/*2035*/
 	/*app communication*/
 	let timeout=1000;/*01sec*/
 	let lastStr='';
 	let uidData={};
 	let jsonObj={};
-	function sendStr(type='',from_inetcore=null,uid='unknown-'+Date.now()){
+	function sendStr(type='',from_inetcore=false,uid='unknown-'+Date.now()){
 		let str=JSON.stringify({
 			'from_inetcore':from_inetcore,
 			'type':type,
