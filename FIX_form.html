@@ -119,7 +119,7 @@
 					jsonObj=JSON.parse(str);
 					if(jsonObj.type=='data'&&jsonObj.uid&&jsonObj.uid!='no_uid'){
 						if(actions[jsonObj.uid]){
-							if(actions[jsonObj.uid].action&&jsonObj.from_inetcore){
+							if(actions[jsonObj.uid].action){
 								actions[jsonObj.uid].action(jsonObj.from_inetcore);
 								actions[jsonObj.uid].action=false;
 							};
@@ -658,7 +658,7 @@
 		</script>
 	</head>
 	<body>
-		<div>2035</div>
+		<div>2039</div>
 		<div class="mobile-tile tile-search">
 			<button type="button" class="btn" id="btn_clsAll" disabled>X</button>
 			<input type="checkbox" class="chkb" id="chkb_nsk" checked disabled>
