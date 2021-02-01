@@ -36,18 +36,17 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 					break;
 					case'uid_miss':
 						if(uidData[jsonObj.to_inetcore.uid]){
-							sendStr('data',uidData[jsonObj.to_inetcore.uid],jsonObj.uid);
-						}else if(jsonObj.uid=='uid_echo'){
-                                                        sendStr('echo','responder ok',jsonObj.uid);
-                                                }else{
+							if(uidData[jsonObj.to_inetcore.uid]=='uid_echo'){
+                                                                sendStr('echo','responder ok','uid_echo');
+                                                        }else{
+                                                                sendStr('data',uidData[jsonObj.to_inetcore.uid],jsonObj.uid);
+                                                        };
+						}else{
 							sendStr('error',jsonObj.to_inetcore.uid,jsonObj.uid);
 						};
 					break;
 					case'uid_ok':
 						uidData[jsonObj.to_inetcore.uid]=false;
-					break;
-					case'echo_delete_this':
-						sendStr('echo','responder ok','uid_echo');
 					break;
 					default:
 						sendStr('error',jsonObj.to_inetcore,jsonObj.uid);
