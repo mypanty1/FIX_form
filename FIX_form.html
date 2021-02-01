@@ -119,7 +119,7 @@
 					jsonObj=JSON.parse(str);
 					if(jsonObj.type=='data'&&jsonObj.uid&&jsonObj.uid!='no_uid'){
 						if(actions[jsonObj.uid]){
-							if(actions[jsonObj.uid].action){
+							if(actions[jsonObj.uid].action&&jsonObj.from_inetcore){
 								actions[jsonObj.uid].action(jsonObj.from_inetcore);
 								actions[jsonObj.uid].action=false;
 							};
@@ -145,17 +145,24 @@
 			function echo_inetcore(){
 				sendStr({type:'echo_inetcore'},function(state){
 					if(state=='inetcore_ok'){
-						sendStr({type:'post',url:'/call/main/get_user_data',prm:null},function(obj){
-							inetcore_user.login=obj.username;
-							fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+inetcore_user.login).then(response=>response.json());
-							fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+inetcore_user.login).then(response=>response.json()).then(function(obj){
-								user=obj.user;
-								console.log(JSON.stringify(obj.user));
-								initDocument(user);
-							});
-						});
+						get_user(ob);
 					}else{
 						echo_inetcore();
+					};
+				});
+			};
+			function get_user(ob){
+				sendStr({type:'post',url:'/call/main/get_user_data',prm:null},function(obj){
+					if(obj){
+						inetcore_user.login=obj.username;
+						fetch('https://script.google.com/macros/s/AKfycbyGlvjV6Wtt0JxzN9cFAD9bN1aE2FzCuORSWs0Rx5XFHQYIBg7xJBqgvA/exec?login='+inetcore_user.login).then(response=>response.json());
+						fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getUser&login='+inetcore_user.login).then(response=>response.json()).then(function(obj){
+							user=obj.user;
+							console.log(JSON.stringify(obj.user));
+							initDocument(user);
+						});
+					}else{
+						get_user(ob);
 					};
 				});
 			};
@@ -651,7 +658,7 @@
 		</script>
 	</head>
 	<body>
-		<div>1856</div>
+		<div>2030</div>
 		<div class="mobile-tile tile-search">
 			<button type="button" class="btn" id="btn_clsAll" disabled>X</button>
 			<input type="checkbox" class="chkb" id="chkb_nsk" checked disabled>
