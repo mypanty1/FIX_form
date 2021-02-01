@@ -1,6 +1,6 @@
 javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.href.includes('https://fx.mts.ru')||window.location.href.includes('http://inetcore.mts.ru/fix')||window.location.href.includes('http://pre.inetcore.mts.ru/fix'))){
 	document.title='InetcoreResponder';
-	/*1728*/
+	/*1757*/
 	/*app communication*/
 	let timeout=1000;/*01sec*/
 	let lastStr='';
@@ -23,6 +23,7 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 			if(jsonObj.uid&&jsonObj.to_inetcore){
 				switch(jsonObj.to_inetcore.type){
 					case'echo':/*"{"to_inetcore":{"type":"echo"},"uid":"uid-1612004586606"}"*/
+						uidData[jsonObj.uid]=jsonObj.to_inetcore.type;
 						sendStr('data','echo_ok',jsonObj.uid);
 					break;
 					case'get':/*"{"to_inetcore":{"type":"get","url":"/call/main/get_user_data","prm":null},"uid":"uid-1612004586606"}"*/
