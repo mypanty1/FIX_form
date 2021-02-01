@@ -122,7 +122,7 @@
 						if(actions[jsonObj.uid]){
 							actions[jsonObj.uid].action(jsonObj.from_inetcore);
 							actions[jsonObj.uid].action=false;
-							sendStr({type:'uid_ok',uid:uid},false);
+							sendStr({type:'uid_ok',uid:jsonObj.uid},false);
 						};
 					}else{
 						console.log(JSON.stringify(jsonObj));
