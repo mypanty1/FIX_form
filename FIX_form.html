@@ -104,11 +104,11 @@
 			const actions={};
 			let jsonObj={};
 			function sendStr(to_inetcore=null,callback){
-				let uid='uid_'+Date.now();
-				actions[uid]={action:callback};
+				let new_uid='uid_'+Date.now();
+				actions[new_uid]={action:callback};
 				let str=JSON.stringify({
 					'to_inetcore':to_inetcore,
-					'uid':uid,
+					'uid':new_uid,
 				});
 				lastStr=str;
 				window.AppInventor.setWebViewString(str);
