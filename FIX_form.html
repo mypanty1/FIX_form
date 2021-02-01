@@ -153,7 +153,7 @@
 			};
 		</script>
 	</head>
-	<body>
+	<body onload="initUser();">
 		<div class="mobile-tile tile-search">
 			<button type="button" class="btn" id="btn_clsAll" disabled>X</button>
 			<input type="checkbox" class="chkb" id="chkb_nsk" checked disabled>
@@ -161,7 +161,7 @@
 			<button type="button" class="btn" id="btn_search" disabled>поиск</button>
 			<button type="button" class="btn hide" id="btn_getTaskList">задачи</button>
 			<script>
-				initUser();
+				/*initUser();*/
 				
 				function initDocument(user){
 					console.log('initDocument');
