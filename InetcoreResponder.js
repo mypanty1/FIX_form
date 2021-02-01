@@ -1,6 +1,6 @@
 javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.href.includes('https://fx.mts.ru')||window.location.href.includes('http://inetcore.mts.ru/fix')||window.location.href.includes('http://pre.inetcore.mts.ru/fix'))){
 	document.title='InetcoreResponder';
-	/*1710*/
+	/*1720*/
 	/*app communication*/
 	let timeout=1000;/*01sec*/
 	let lastStr='';
@@ -27,13 +27,13 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 					break;
 					case'get':/*"{"to_inetcore":{"type":"get","url":"/call/main/get_user_data","prm":null},"uid":"uid-1612004586606"}"*/
 						httpGet(jsonObj.to_inetcore.url,true).then(function(data){
-							uidData[jsonObj.uid]=data;
+							uidData[jsonObj.uid]=data;console.log(JSON.stringify(uidData[jsonObj.uid]));
 							sendStr('data',data,jsonObj.uid);
 						});
 					break;
 					case'post':/*"{"to_inetcore":{"type":"post","url":"/call/main/get_user_data","prm":null},"uid":"uid-1612004586606"}"*/
 						httpPost(jsonObj.to_inetcore.url,jsonObj.to_inetcore.prm,true).then(function(data){
-							uidData[jsonObj.uid]=data;
+							uidData[jsonObj.uid]=data;console.log(JSON.stringify(uidData[jsonObj.uid]));
 							sendStr('data',data,jsonObj.uid);
 						});
 					break;
