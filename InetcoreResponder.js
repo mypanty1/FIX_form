@@ -37,10 +37,10 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 					case'uid_miss':
 						if(uidData[jsonObj.to_inetcore.uid]){
 							if(uidData[jsonObj.to_inetcore.uid]=='uid_echo'){
-                                                                sendStr('echo','responder ok','uid_echo');
-                                                        }else{
-                                                                sendStr('data',uidData[jsonObj.to_inetcore.uid],jsonObj.uid);
-                                                        };
+								sendStr('echo','responder ok','uid_echo');
+							}else{
+								sendStr('data',uidData[jsonObj.to_inetcore.uid],jsonObj.uid);
+							};
 						}else{
 							sendStr('error',jsonObj.to_inetcore.uid,jsonObj.uid);
 						};
