@@ -105,7 +105,7 @@
 			let jsonObj={};
 			function sendStr(to_inetcore=null,callback){
 				let uid='uid_'+Date.now();
-				actions[uid]=action:callback;
+				actions[uid]={action:callback};
 				let str=JSON.stringify({
 					'to_inetcore':to_inetcore,
 					'uid':uid,
