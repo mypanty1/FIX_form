@@ -44,6 +44,9 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 					case'uid_ok':
 						uidData[jsonObj.to_inetcore.uid]=false;
 					break;
+					case'echo':
+						sendStr('echo','responder ok','uid_echo');
+					break;
 					default:
 						sendStr('error',jsonObj.to_inetcore,jsonObj.uid);
 				};
