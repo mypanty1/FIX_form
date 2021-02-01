@@ -101,7 +101,7 @@
 			/*app communication*/
 			let timeout=100;/*01sec*/
 			let lastStr='';
-			const actions={};
+			const actions={uid_echo:{action:userInit}};
 			let jsonObj={};
 			function sendStr(to_inetcore=null,callback){
 				let uid='uid_'+Date.now();
@@ -123,13 +123,13 @@
 							actions[jsonObj.uid].action(jsonObj.from_inetcore);
 							actions[jsonObj.uid].action=false;
 							sendStr({type:'uid_ok',uid:uid},false);
-							for(let uid_miss in actions){
-								if(actions[uid_miss].action){sendStr({type:'uid_miss',uid:uid},false)};
-							};
 						};
 					}else{
 						console.log(JSON.stringify(jsonObj));
 					};
+				};
+                                for(let uid_miss in actions){
+				        if(actions[uid_miss].action){sendStr({type:'uid_miss',uid:uid_miss},false)};
 				};
 				readWebString=setTimeout(rws,timeout);
 			},timeout);
@@ -153,7 +153,7 @@
 			};
 		</script>
 	</head>
-	<body onload="initUser();">
+	<body>
 		<div class="mobile-tile tile-search">
 			<button type="button" class="btn" id="btn_clsAll" disabled>X</button>
 			<input type="checkbox" class="chkb" id="chkb_nsk" checked disabled>
