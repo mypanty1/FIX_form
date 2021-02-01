@@ -1,6 +1,6 @@
 javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.href.includes('https://fx.mts.ru')||window.location.href.includes('http://inetcore.mts.ru/fix')||window.location.href.includes('http://pre.inetcore.mts.ru/fix'))){
 	document.title='InetcoreResponder';
-	/*2039*/
+	/*2046*/
 	/*app communication*/
 	let timeout=1000;/*01sec*/
 	let lastStr='';
@@ -29,7 +29,7 @@ javascript:(function(){if(document.title!='InetcoreResponder'&&(window.location.
 					break;
 					/*проверка на доступность методов инеткора*/
 					case'echo_inetcore':/*"{"to_inetcore":{"type":"echo_inetcore"},"uid":"uid-1612004586606"}"*/
-						if(typeof httpGet=='function'&&typeof httpPost=='function'){
+						if(document.getElementById('ptvtb-app')/*typeof httpGet=='function'&&typeof httpPost=='function'*/){
 							uidData[jsonObj.uid]='inetcore_ok';
 							sendStr('data','inetcore_ok',jsonObj.uid);
 						}else{
