@@ -598,7 +598,7 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 				devices_ne+=createDevice({DEVICE_NAME:device,IP_ADDRESS:'',inrack:rackObj.RACK_NAME,ghost:'ghost'});
 			};
 		};
-		let title=`<span class="title-norm">`+rackObj.RACK_NAME+`</span><span class="title-short">`+createRackTitle(rackObj)+`</span>`;
+		let title=`<span class="title-norm">`+createRackTitle(rackObj)+`</span><span class="title-short">`+createRackTitle(rackObj)+`</span>`;
 		return `
 			<div class="rack `+((rackObj.RACK_NAME)?(`type-`+getType(rackObj.RACK_NAME)):`type-unknown`)+`" id="`+rackObj.RACK_ID+`" style="order:`+((rackObj.N_RACK_SITE)?rackObj.N_RACK_SITE:getNum(rackObj.RACK_NAME))+`;" title="`+rackObj.RACK_NAME+`">
 				<div class="rack-head">
