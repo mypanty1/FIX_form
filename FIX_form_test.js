@@ -28,9 +28,9 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 	let addCSS=document.createElement('style');addCSS.type='text/css';
 	let myCSS=`
 		body{margin:unset;height:100%;background-color:#f1f1f1;display:flex;flex-direction:column;box-sizing:border-box;font-size:12px;}
-		.chkb{}
-		.search-input{width:100%;font-size:14px;}
-		.btn{height:22px;font-size:14px;padding:1px 4px;}
+		input[type="checkbox"]{}
+		input[type="text"]{width:100%;font-size:14px;}
+		button{height:22px;font-size:14px;padding:1px 4px;}
 		/*hr{padding:0px;margin:8px 0px;border:0;border-top:1px solid rgba(34,30,30,0.15);}*/
 		
 		
@@ -56,15 +56,14 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 				.tab-controller>.title{font-size:12px;line-height:20px;margin-right:2px;}
 				.btns-row-scroll{overflow-x:overlay;}
 					.btns-row{display:inline-flex;}
-						.tab-btn{font-size:14px;width:22px;padding:0px 0px;margin-left:1px;margin-right:1px;}
+						.tab-btn{width:22px;padding:0px 0px;margin-left:1px;margin-right:1px;}
 						.tab-btn:disabled{font-weight:bold;}
 			.entrances-row{}
 				.entrance-tab{display:block;}
 				.entrance-tab.hide{display:none;}
-					.entrance{display:flex;flex-direction:column;min-width:114px;width:fit-content;margin: auto;}
+					.entrance{display:flex;flex-direction:column;/*min-width:114px;width:fit-content;margin:auto;*/}
 						.entrance-head{font-size:10pt;background-color:#eee;border: 1px solid #000;border-bottom:unset;}
 							.entrance-title{font-size:8pt;line-height:12px;color:#000;}
-							.el-input{height:9px;font-size:8pt;line-height:10px;text-align:left;}
 						.floors-over{display:flex;flex-direction:column-reverse;background-color:#eee;border: 1px solid #000;border-top-color:#ccc;border-bottom-color:#ccc;}
 						.floors-under{display:flex;flex-direction:column;background-color:#eee;border: 1px solid #000;border-top:unset;}
 							.floor{display:inline-grid;grid-template-columns:20px auto;border-top:1px solid #000;/*border-bottom:1px solid #000;*//*margin-top:1px;*//*margin-bottom:1px;*/}
@@ -108,6 +107,8 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 															.type-CU .title-short{display:block;}
 															.without .title-short{display:block;}
 									.floor-flats{display:flex;flex-direction:row;flex-wrap:wrap;}
+									.floor-flats.floor-even{justify-content:space-between;}
+									.floor-flats.floor-neven{justify-content:space-around;}
 										.flat-none{width:100%;height:16px;line-height:16px;font-size:14px;margin:auto;text-align:center;color:#a2a2a2;}
 										.flat{width:24px;min-width:24px;height:36px;line-height:12px;font-size:12px;margin:1px;border: 1px solid #a2a2a2;color:#a2a2a2;border-radius:2px;text-align:center;}
 										.flat-service{border-color:#000;}
@@ -119,6 +120,19 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 											.red{display:block;color:tomato;}
 											.green{display:block;color:forestgreen;}
 		.hide{display:none;}
+		
+		.modal-wrapper{display:block;width:100%;height:100%;position:fixed;}
+		.modal-wrapper.hide{display:none;}
+			.modal-dialog{margin:1em;width:auto;min-height:100px;height:fit-content;position:relative;background-color:#aaa;padding:1em;border:1px solid #000;border-radius:5px;}
+				.dialog-head{width:100%;display:inline-flex;justify-content:space-between;}
+					.dialog-title{}
+				.dialog-fields{width:100%;display:grid;grid-template-columns:auto 70%;margin-top:1em}
+					.field{border:1px solid #777;margin-bottom:2px;}
+					.field-title{grid-column:1/2;bborder-right:unset;}
+					.field-input{grid-column:2/3;border-left:unset;}
+					.field-input input{width:96%;height:1em;}
+					.field-input select{width:100%;}
+				.dialog-buttons{width:100%;display:inline-flex;justify-content:space-around;margin-top:1em;}
 	`;
 	addCSS.appendChild(document.createTextNode(myCSS));document.head.appendChild(addCSS);
 	if(document.getElementsByTagName('link')[1].rel=='stylesheet'){document.getElementsByTagName('link')[1].remove()};
@@ -127,11 +141,11 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 	document.getElementsByTagName('body')[0].insertAdjacentHTML('afterBegin',`
 		<div id="error">2125</div>
 		<div class="mobile-tile tile-search">
-			<button type="button" class="btn" id="btn_clsAll" disabled>X</button>
-			<input type="checkbox" class="chkb" id="chkb_nsk" checked disabled>
-			<input type="text" class="search-input" id="input_search" city="" value="" placeholder="" disabled>
-			<button type="button" class="btn" id="btn_search" disabled>поиск</button>
-			<button type="button" class="btn hide" id="btn_getTaskList">задачи</button>
+			<button type="button" id="btn_clsAll" disabled>X</button>
+			<input type="checkbox" id="chkb_nsk" checked disabled>
+			<input type="text" id="input_search" city="" value="" placeholder="" disabled>
+			<button type="button" id="btn_search" disabled>поиск</button>
+			<button type="button" class="hide" id="btn_getTaskList">задачи</button>
 		</div>
 	`);
 		
@@ -186,19 +200,17 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 	};
 	function searchByAddress(pattern,apikey='96902d94-ce02-4125-9ca8-b028c28b7772'){
 		fetch('https://geocode-maps.yandex.ru/1.x/?format=json&apikey='+apikey+'&geocode='+pattern+'&result=1&lang=ru_RU').then(response=>response.json()).then(function(obj){
-			try{
+			if(obj.response.GeoObjectCollection.featureMember[0]){
 				let coords=obj.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.replace(' ',',').split(',').reverse().join(',');/*55.03165,83.01073*/
 				if(coords){
-					searchByCoords(coords);
+					searchObject(coords);
 				}else{
-					showError('GeoObject: error');
-					searchByCoords(pattern,false);
+					showError('GeoObject.Point: error');
+					searchObject(pattern,false);
 				};
-			}catch(e){
-				showError('GeoObjectCollection: error');
-				searchByCoords(pattern,false);
-			}finally{
-				
+			}else{
+				showError('GeoObject: error');
+				searchObject(pattern,false);
 			};
 		});
 	};
@@ -267,133 +279,79 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 			</div>`;
 		document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile)
 	};
-	function createSelectBuildingTile(result){/*todo*/
-		let dataStr='';
-		for(let param in result.data){dataStr+=`<div>&nbsp;&nbsp;&nbsp;`+param+`:<span>`+result.data[param]+`</span></div>`};
+	function createSelectBuildingTile(buildings){/*todo*/
 		let newTile=`
 			<div class="mobile-tile tile tile-select">
-				<div class="el-head">
-					<div>pattern:<span>`+result.pattern+`</span></div>
-					<div>key:<span>`+result.key+`</span></div>
-					<div>type:<span>`+result.type+`</span></div>
-					<div>data:</div>`
-					+dataStr+`
-				</div>
+				<div>похожие адреса:</div>
+				<!--кнопки домов-->
 			</div>`;
-		document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile)
+		document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile);
+		for(let building of buildings){
+			let btn=building.node+'_btn';
+			document.getElementsByClassName('tile-select')[0].insertAdjacentHTML('beforeEnd',`<div style="margin-bottom: 2px;"><button type="button" id="`+btn+`">`+trimAddress(building.address)+`</button></div>`);
+			document.getElementById(btn).addEventListener('click',function(){searchObject(building.node)});
+		};
+		
 	};
-	function searchByCoords(coords,cls=true){
+	function searchObject(coords,cls=true){
 		if(cls){clsTiles()};/*костыль*/
-		httpPost('/call/device/search',{'pattern':coords},true).then(function(result){
-			if(result){
-				switch(result.key){
-					case'building':/*по имени узла*/
-						switch(result.type){
+		httpPost('/call/device/search',{'pattern':coords},true).then(function(data){
+			if(data){
+				switch(data.key){
+					case'coordinates':
+						switch(data.type){
+							case'building_list':/*список узлов на адресе или рядом*//*55.037087,82.929278*/
+								createSelectBuildingTile(data.data);
+							break;
 							case'building':/*узел ду*/
+								createBuildingTile(data);
+							break;
 							case'building_mu':/*узел му*/
-								createBuildingTile(result);
+								createBuildingTile(data);
+							break;
+							case'warning':/*нет узлов по координатам*/
+							default:
+								createErrorTile(data);
+						};
+					break;
+					case'building':/*по имени узла*/
+						switch(data.type){
+							case'building':/*узел ду*/
+								createBuildingTile(data);
+							break;
+							case'building_mu':/*узел му*/
+								createBuildingTile(data);
 							break;
 							case'warning':/*ду000000054КР-00340*/
 							default:
-								createErrorTile(result);
+								createErrorTile(data);
 						};
 					break;
 					case'building_id':/*по id площадки*/
-						switch(result.type){
+						switch(data.type){
 							case'building_list':/*ду+му(или ду+ду?)*//*9135155037513569210*/
-								var DU_or_MU_only=result.data.filter(function(node){return node.type=='ДУ'||node.type=='МУ'});
-								if(DU_or_MU_only&&DU_or_MU_only.length>0){
-									createBuildingTile({'data':Object.assign(DU_or_MU_only[0],{'nodes':DU_or_MU_only})});
-								}else{
-									createSelectBuildingTile(result);
-								};
+								createSelectBuildingTile(data.data);
 							break;
 							case'building':/*ду*//*9135155037413562085*/
+								createBuildingTile(data);
+							break;
 							case'building_mu':/*узел му*//*8101638987013413752*/
-								createBuildingTile(result);
+								createBuildingTile(data);
 							break;
 							default:
-								createErrorTile(result);
-						};
-					break;
-					case'coordinates':/*поиск по координатам*/
-						switch(result.type){
-							case'building':/*узел ду*/
-							case'building_mu':/*узел му*/
-								createBuildingTile(result);
-							break;
-							case'building_list':/*список узлов на адресе или рядом*//*55.037087,82.929278*/
-								createSelectBuildingTile(result);
-							break;
-							case'warning':/*нет узлов по координатам*/
-								searchByCoords(coords,false);
-							break;
-							default:
-								createErrorTile(result);
-						};
-					break;
-					case'device':/*поиск разрешенных устройств по имени Nioss*/
-						switch(result.type){
-							case'device':/*OP_25KR_00853_1*/
-								createErrorTile(result);
-							break;
-							case'warning':/*OP_25KR_00853_5*/
-							default:
-								createErrorTile(result);
-						};
-					break;
-					case'port':/*поиск порта по имени Smarts*/
-						switch(result.type){
-							case'port':/*PORT-ETH_KR_54_02227_1/1*/
-								createErrorTile(result);
-							break;
-							case'warning':/*PORT-ETH_KR_54_02227_1/16*/
-							default:
-								createErrorTile(result);
-						};
-					break;
-					case'ip':/*поиск устройства по ip*/
-						switch(result.type){
-							case'list':/*10.221.168.14*//*порты 10.70.18.110*/
-							case'device':/*10.221.185.133*/
-								createErrorTile(result);
-							break;
-							case'warning':/*10.70.34.67*/
-							default:
-								createErrorTile(result);
-						};
-					break;
-					case'mac':/*поиск по маку*/
-						switch(result.type){
-							case'mac':
-								createErrorTile(result);
-							break;
-							case'warning':/*08c6.b3c0.397d*/
-							default:
-								createErrorTile(result);
-						};
-					break;
-					case'account':/*поиск по лс*/
-						switch(result.type){
-							case'list':/*список дублей по регионам*//*2-042-0023253*//*нет, list возвращает lbsv*/
-							case'account':/*абонент*/
-								createErrorTile(result);
-							break;
-							case'warning':/*6-091-0000000*/
-							default:
-								createErrorTile(result);;
+								createErrorTile(data);
 						};
 					break;
 					default:
-						createErrorTile(result);
+						createErrorTile(data);
 				};
 			}else{
 				showError(coords);
 			};
 		});
 	};
+	function trimAddress(addr){let addrArr=addr.split(', ').reverse();return addrArr[1].replace(/\s/g,'')+' '+addrArr[0].replace(/\s/g,'')};
 	function createBuildingTile(buildingObj){/*building*/
-		function trimAddress(addr){let addrArr=addr.split(', ').reverse();return addrArr[1].replace(/\s/g,'')+' '+addrArr[0].replace(/\s/g,'')};
 		document.getElementById('input_search').value=trimAddress(buildingObj.data.address);
 		let newTile=`
 			<div class="mobile-tile tile tile-building" id="`+buildingObj.data.id+`" name="`+buildingObj.data.name+`">
@@ -510,15 +468,7 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 			<div class="entrance-tab" id="`+entranceObj.ENTRANCE_ID+`_tab">
 				<div class="entrance" id="`+entranceObj.ENTRANCE_ID+`">
 					<div class="entrance-head">
-						<div class="entrance-title">
-							`+entranceObj.ENTRANCE_NAME+`
-							<input type="text" class="el-input input-2dig" style="width:15px;margin-left:5px;" value="`+entranceObj.ENTRANCE_NO+`" disabled>
-						</div>
-						<div>
-							<input type="text" class="el-input input-2dig" style="width:15px;" value="`+entranceObj.FLOOR_COUNT+`" disabled>
-							<input type="text" class="el-input input-4dig" style="width:30px;margin-left:10px;" value="`+entranceObj.FLAT_FROM+`" disabled>
-							<input type="text" class="el-input input-4dig" style="width:30px;margin-left:5px;" value="`+entranceObj.FLAT_TO+`" disabled>
-						</div>
+						<div class="entrance-title">`+createEntranceTitle(entranceObj)+`</div>
 					</div>
 					<div class="floors-over" id="`+entranceObj.ENTRANCE_ID+`.over">
 						`+createFloor(entranceObj.ENTRANCE_ID,'','cherdak')+`
@@ -553,14 +503,15 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 	};
 	function createFloor(entrance_id,number='0',type='',floor_first=0,floor_last=0,flats=[]){/*этаж падика*/
 		let floor={
-			'cherdak':{name:'cherdak',order:'1001',title:'Ч',flats:createNoFlats('чердак')},
-			'tehetag':{name:'tehetag',order:'1000',title:'Т',flats:createNoFlats('тех. этаж')},
-			'podval':{name:'podval',order:'1000',title:'П',flats:createNoFlats('подвал')},
+			'cherdak':{name:'cherdak',order:'1001',title:'Ч',flats:createNoFlats('чердак'),variant:''},
+			'tehetag':{name:'tehetag',order:'1000',title:'Т',flats:createNoFlats('тех. этаж'),variant:''},
+			'podval':{name:'podval',order:'1000',title:'П',flats:createNoFlats('подвал'),variant:''},
 			'':{
 				name:'floor_'+number,
 				order:((Math.abs(+number)+10)*10),
 				title:number,
 				flats:((floor_first&&floor_last||flats.length>0)?createEmptyFlats(floor_first,floor_last):createNoFlats()),
+				variant:((+number%2==0)?'floor-even':'floor-neven'),
 			},
 		}[type];
 		function createNoFlats(name=''){return `<div class="flat-none">`+name+`</div>`};
@@ -581,7 +532,7 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 				<div class="floor-objects" id="`+entrance_id+`.`+floor.name+`.objects">
 					<div class="floor-racks" id="`+entrance_id+`.`+floor.name+`.racks"></div>
 					<div class="floor-racks" id="`+entrance_id+`.`+floor.name+`.rk"></div>
-					<div class="floor-flats" id="`+entrance_id+`.`+floor.name+`.flats">
+					<div class="floor-flats `+floor.variant+`" id="`+entrance_id+`.`+floor.name+`.flats">
 						`+floor.flats+`
 					</div>
 				</div>
@@ -655,6 +606,7 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 	function toKR(name){return name.replace('КР','KR')};/*to En*/
 	function isETH(name){return(getType(name)=='ETH')?true:false};
 	function isOP(name){return(getType(name)=='OP')?true:false};
+	function createEntranceTitle(e){return getType(e.ENTRANCE_NAME)+'#'+getNum(e.ENTRANCE_NAME)};/*P#2*/
 	function createDeviceTitleIP(d){return (createDeviceTitle(d)+((d.IP_ADDRESS&&d.IP_ADDRESS.length)?('&nbsp;'+'..'+d.IP_ADDRESS.split('.')[2]+'.'+d.IP_ADDRESS.split('.')[3]):''))};/*ETH#14 153.168*/
 	function createDeviceTitle(d){return getType(d.DEVICE_NAME)+'#'+getNum(d.DEVICE_NAME)};/*ETH#12*//*A#02*/
 	function isPP(name){return(getType(name)=='PP')?true:false};
@@ -663,6 +615,47 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 	function createRackTitle(r){return getType(r.RACK_NAME)+'#'+getNum(r.RACK_NAME)};/*L#2*//*CU#46*/
 	function isL(name){return(getType(name)=='L')?true:false};
 	function isCU(name){return(getType(name)=='CU')?true:false};
+	
+	let modal=`
+		<div class="modal-wrapper">
+			<div class="modal-dialog">
+				<div class="dialog-head">
+					<div class="dialog-title">Патч-панель</div>
+					<button type="button">X</button>
+				</div>
+				<div class="dialog-fields">
+					<div class="field field-title">NIOSS id:</div><div class="field field-input"><input type="text" value="9135155037413559560" disabled></div>
+					<div class="field field-title">NIOSS name:</div><div class="field field-input"><input type="text" value="PP_54KR_00340_42" disabled></div>
+					<div class="field field-title">модель:</div><div class="field field-input"><input type="text" value="Патч-панель 12" disabled></div>
+					<div class="field field-title">текстовый:</div><div class="field field-input"><input type="text" value=""></div>
+					<div class="field field-title">списочный:</div><div class="field field-input">
+						<select>
+							<option selected disabled></option>
+							<option>тип2</option>
+							<option>тип3</option>
+							<option>тип4</option>
+						</select>
+					</div>
+					<div class="field field-title">списочный:</div><div class="field field-input">
+						<select>
+							<option></option>
+							<option>тип2</option>
+							<option selected>тип3</option>
+							<option>тип4</option>
+						</select>
+					</div>
+					<div class="field field-title">текстовый:</div><div class="field field-input"><input type="text" value=""></div>
+					<div class="field field-title">текстовый:</div><div class="field field-input"><input type="text" value=""></div>
+				</div>
+				<div class="dialog-buttons">
+					<button type="button">cancel</button>
+					<button type="button">delete</button>
+					<button type="button">copy</button>
+					<button type="button">save</button>
+				</div>
+			</div>
+		</div>
+	`;
 	
 }else{console.log(document.title)}}());
 
