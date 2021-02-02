@@ -71,7 +71,7 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 								.floor-number{line-height:14px;height:14px;color:gray;/*margin:auto;*/text-align:center;}
 								.floor-objects{}
 									.floor-racks{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:space-around;}
-										.rack{width:max-content;height:fit-content;min-height:12px;margin:1px;border:1px solid #000;border-radius:2px;background-color:#aaa;}
+										.rack{width:max-content;height:fit-content;min-height:27px;margin:1px;border:1px solid #000;border-radius:2px;background-color:#aaa;}
 										.type-L{width:108px;}
 										.type-CU{width:48px;}
 											.rack-head{}
