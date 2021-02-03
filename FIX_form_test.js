@@ -652,20 +652,20 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 				defaultFields+=createField('default','Родитель',document.getElementsByClassName('tile-building')[0].getAttribute('name'));
 				defaultFields+=createField('default','NIOSS_id',obj.ENTRANCE_ID);
 				defaultFields+=createField('default','Название',toKP(obj.ENTRANCE_NAME));
-				defaultFields+=createField('area','Описание','undefined',[],true);
+				defaultFields+=createField('area','Описание','_undefined',[],true);
 				dialogFields+=createField('text','высота',obj.FLOOR_COUNT);
 				dialogFields+=createField('text','квартира с',obj.FLAT_FROM);
 				dialogFields+=createField('text','квартира по',obj.FLAT_TO);
-				dialogFields+=createField('area','примечание','undefined');
+				dialogFields+=createField('area','примечание','_undefined');
 			break;
 			case'L':case'CU':
 				defaultFields+=createField('default','Родитель',document.getElementById(obj.ENTRANCE_ID).getAttribute('name'));
 				defaultFields+=createField('default','NIOSS_id',obj.RACK_ID);
 				defaultFields+=createField('default','Название',toKP(obj.RACK_NAME));
 				defaultFields+=createField('select','Тип шкафа',type,['L','CU'],true);
-				defaultFields+=createField('area','Описание:',obj.DESCRIPTION,[],true);
+				defaultFields+=createField('area','Описание',obj.DESCRIPTION,[],true);
 				dialogFields+=createField('text','этаж',obj.FLOOR);
-				dialogFields+=createField('select','не этаж',obj.OFF_FLOOR,['','Чердак',"Технический этаж","Подвал"]);
+				dialogFields+=createField('select','не этаж',obj.OFF_FLOOR,['','Чердак','Технический этаж','Подвал']);
 				dialogFields+=createField('text','место на этаже',obj.LOCATION);
 				dialogFields+=createField('text','имя ключа',obj.N_KEY);
 				dialogFields+=createField('area','примечание',obj.CIPHER_KEY);
@@ -675,13 +675,13 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 				defaultFields+=createField('default','NIOSS_id',obj.DEVICE_NIOSS_ID||obj.id);
 				defaultFields+=createField('default','Название',toKP(obj.DEVICE_NAME));
 				defaultFields+=createField('select','Тип элемента',type,['ETH','OP','A','А'],true);
-				defaultFields+=createField('area','Описание','undefined',[],true);
-				dialogFields+=createField('select','шкаф','undefined',['','undefined','','']);
+				defaultFields+=createField('area','Описание','_undefined',[],true);
+				dialogFields+=createField('select','шкаф','_undefined',['','_undefined','','']);
 				dialogFields+=createField('text','VENDOR',obj.VENDOR);
 				dialogFields+=createField('text','MODEL',obj.MODEL);
 				dialogFields+=createField('text','IP_ADDRESS',obj.IP_ADDRESS);
-				dialogFields+=createField('text','подъезды','undefined');
-				dialogFields+=createField('area','примечание','undefined');
+				dialogFields+=createField('text','подъезды','_undefined');
+				dialogFields+=createField('area','примечание','_undefined');
 			break;
 			case'PP':case'CR':
 				defaultFields+=createField('default','Родитель',document.getElementById(obj.entrance_id).getAttribute('name'));
@@ -690,7 +690,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 				defaultFields+=createField('text','модель',obj.model,[],true);
 				defaultFields+=createField('text','тип',obj.type,[],true);
 				defaultFields+=createField('text','расшивка',obj.port_pr_utp,[],true);
-				dialogFields+=createField('select','шкаф','undefined',['','undefined','','']);
+				dialogFields+=createField('select','шкаф','_undefined',['','_undefined','','']);
 				dialogFields+=createField('text','этаж',obj.n_floor);
 				dialogFields+=createField('text','место на этаже',obj.location);
 				dialogFields+=createField('area','примечание',obj.description);
@@ -723,22 +723,22 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 	function createField(type='',title='',value='',values=[],readonly=false){
 		switch(type){
 			case'text':
-				return `<div class="field field-title">`+title+`:</div><div class="field field-input"><input type="text" value="`+(value||'')+`" `+((readonly)?`disabled`:``)+`></div>`;
+				return `<div class="field field-title">`+title+`</div><div class="field field-input"><input type="text" value="`+(value||'')+`" `+((readonly)?`disabled`:``)+`></div>`;
 			break;
 			case'area':
-				return `<div class="field field-title">`+title+`:</div><div class="field field-input"><input type="text" value="`+(value||'')+`" `+((readonly)?`disabled`:``)+`></div>`;
+				return `<div class="field field-title">`+title+`</div><div class="field field-input"><input type="text" value="`+(value||'')+`" `+((readonly)?`disabled`:``)+`></div>`;
 			break;
 			case'select':
 				let options='';for(let option of values){options+=`<option `+((option==value)?`selected`:``)+`>`+(option||'')+`</option>`;};
 				return `
-					<div class="field field-title">`+title+`:</div><div class="field field-input">
+					<div class="field field-title">`+title+`</div><div class="field field-input">
 						<select `+((readonly)?`disabled`:``)+`>
 							`+options+`
 						</select>
 					</div>`;
 			break;
 			default:
-				return `<div class="field field-title">`+title+`:</div><div class="field field-input">`+(value||'')+`</div>`;
+				return `<div class="field field-title">`+title+`</div><div class="field field-input">`+(value||'')+`</div>`;
 		};
 	};
 	
