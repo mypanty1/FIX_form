@@ -3,7 +3,7 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 	/*todo*/
 	/*try{}catch(e){}finally{};*/
 	
-	let dev=true;
+	let dev=false;
 	let input='';
 	if(dev){
 		window.AppInventor={
