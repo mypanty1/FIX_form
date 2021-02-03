@@ -12,7 +12,7 @@ javascript:(function(){if(document.title!='FIX_form_test'&&(window.location.href
 		};
 	};
 	
-	window.AppInventor.setWebViewString('{"'+document.title+'":"'+document.title+'"}');
+	window.AppInventor.setWebViewString('{"FIX_form":"'+document.title+'"}');
 	
 	document.getElementsByTagName('body')[0].hidden=true;
 	let timer=setTimeout(delApp,100);
