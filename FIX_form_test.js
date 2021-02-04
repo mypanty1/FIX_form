@@ -8,7 +8,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 	if(dev){
 		window.AppInventor={
 			setWebViewString:function(str){console.log('setWebViewString:',str)},
-			getWebViewString:function(){console.log('getWebViewString:',input);return input},
+			getWebViewString:function(){console.log('getWebViewString:',input);console.log(site);console.log(object);return input},
 		};
 	};
 	
@@ -41,16 +41,18 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 		.tile{}
 		.tile-warning{background-color:#fee;}
 		.tile-select{background-color:#fed;}
-		.tile-task{display:inline-flex;background-color:#fff;}
-			.create-task{}
-				.task-input{font-size:12px;width:100%;resize:vertical;min-height:16px;}
-			.task-new{background-color:aliceblue;}
-			.task-start{background-color:bisque;}
-			.task-reject{background-color:darksalmon;}
-			.task-end{background-color:darkseagreen;}
+		.tile-task{background-color:#fff;}
+		.task-new{background-color:aliceblue;}
+		.task-start{background-color:bisque;}
+		.task-reject{background-color:darksalmon;}
+		.task-end{background-color:darkseagreen;}
+			.task-content{width:100%;display:inline-flex;}
 				.task-id{margin-right:auto;}
 				.task-state{}
 				.task-date{margin-left:auto;}
+				.task-input{font-size:12px;width:100%;resize:vertical;min-height:16px;}
+		.create-task{}
+			.counters{width:100%;display:inline-grid;grid-template-columns:40% 20% 20% 20%;}
 		.tile-building{background-color:#fff;}
 			.tab-controller{display:inline-flex;width:100%;margin-bottom:2px;}
 				.tab-controller>.title{font-size:12px;line-height:20px;margin-right:2px;}
@@ -93,7 +95,6 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 												.type-CR{background-color:#ddd;}
 												.type-PP{background-color:#ddd;}
 												.without{width:44px;margin-top:1px;}
-												.ghost{opacity:0.3;}
 													.device-head{display:inline-flex;}
 														.device-led{width:6px;min-width:6px;}
 														.online{background-color:green;}
@@ -119,7 +120,9 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 											.service{display:none;}
 											.red{display:block;color:tomato;}
 											.green{display:block;color:forestgreen;}
+			.devices-without{margin-top:1em;}
 		.hide{display:none;}
+		.ghost{opacity:0.3;}
 		
 		.modal-wrapper{display:block;width:100%;height:100%;position:fixed;}
 		.modal-wrapper.hide{display:none;}
@@ -149,8 +152,6 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 		</div>
 	`);
 	
-	let site={info:{},entrances:{},racks:{},devices:{},ppanels:{}};
-		
 	/*current Inetcore user*/
 	let inetcoreUsername='default';
 	/*current user profile*/
@@ -196,12 +197,13 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 		});
 	};
 	function clsTiles(){
+		presetSite();
 		document.getElementById('btn_getTaskList').classList.add('hide');
 		let tiles=document.getElementsByClassName('tile');
 		while(tiles.length>0){tiles[0].remove();};
 	};
 	function searchByAddress(pattern,apikey='96902d94-ce02-4125-9ca8-b028c28b7772'){
-		site={info:{},entrances:{},racks:{},devices:{},ppanels:{}};
+		document.getElementById('btn_search').setAttribute('disabled','disabled');
 		fetch('https://geocode-maps.yandex.ru/1.x/?format=json&apikey='+apikey+'&geocode='+pattern+'&result=1&lang=ru_RU').then(response=>response.json()).then(function(obj){
 			if(obj.response.GeoObjectCollection.featureMember[0]){
 				let coords=obj.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.replace(' ',',').split(',').reverse().join(',');/*55.03165,83.01073*/
@@ -215,9 +217,15 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 				showError('GeoObject: error');
 				searchObject(pattern,false);
 			};
+		}).catch(function(err){
+			console.log(err);
+			document.getElementById('btn_search').removeAttribute('disabled');
+		}).finally(function(){
+			
 		});
 	};
 	function getTaskList(){
+		document.getElementById('btn_getTaskList').setAttribute('disabled','disabled');
 		let taskTiles=document.getElementsByClassName('tile-task');while(taskTiles.length>0){taskTiles[0].remove()};
 		let site_id=document.getElementsByClassName('tile-building')[0].id;
 		fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList&login='+inetcoreUsername+'&key=site_id&value='+site_id).then(response=>response.json()).then(function(obj){
@@ -227,6 +235,12 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 			if(!document.getElementsByClassName('task-new').length&&!document.getElementsByClassName('task-start').length){
 				createTaskTile({task_id:''});
 			};
+			document.getElementById('btn_getTaskList').removeAttribute('disabled');
+		}).catch(function(err){
+			console.log(err);
+			document.getElementById('btn_getTaskList').removeAttribute('disabled');
+		}).finally(function(){
+			
 		});
 	};			
 	function createTaskTile(task){
@@ -237,18 +251,29 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 			let lastDateTime=((task.last_date_time)?(last_date_time.toLocaleDateString()+' '+last_date_time.toLocaleTimeString()):'');
 			newTile=`
 				<div class="mobile-tile tile tile-task task-`+task.task_state+`" id="`+task.task_id+`">
-					<div class="task-id">`+task.task_id+`</div><div class="task-state">`+stateText+`</div><div class="task-date">`+lastDateTime+`</div>
+					<div class="task-content">
+						<div class="task-id">`+task.task_id+`</div><div class="task-state">`+stateText+`</div><div class="task-date">`+lastDateTime+`</div>
+					</div>
 				</div>
 			`;
 		}else{
 			newTile=`
 				<div class="mobile-tile tile tile-task create-task">
-					<textarea rows="1" class="task-input" placeholder="описание запроса" id="input_task"></textarea><button type="button" class="btn" id="btn_task">отправить</button>
+					<div class="task-content">
+						<textarea rows="1" class="task-input" placeholder="описание запроса" id="input_task"></textarea><button type="button" class="btn" id="btn_task">отправить</button>
+					</div>
+					<div class="counters">
+						<div>всего объектов:<span id="onsite"></span>;</div>
+						<div>создать:<span id="create"></span>;</div>
+						<div>обновить:<span id="update"></span>;</div>
+						<div>удалить:<span id="delete"></span>;</div>
+					</div>
 				</div>
 			`;
 		};
 		document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile);
 		if(document.getElementById('btn_task')){document.getElementById('btn_task').addEventListener('click',createNewTask);};
+		countObjects();
 	};			
 	function createNewTask_old(){
 		let url='https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec';
@@ -351,13 +376,15 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 			}else{
 				showError(coords);
 			};
+			document.getElementById('btn_search').removeAttribute('disabled');
 		});
 	};
 	function trimAddress(addr){let addrArr=addr.split(', ').reverse();return addrArr[1].replace(/\s/g,'')+' '+addrArr[0].replace(/\s/g,'')};
+	let site={};presetSite();
+	function presetSite(){site={entrances:{},racks:{},devices:{},ppanels:{},create:{},update:{},delete:{},counters:{}};}
 	function createBuildingTile(buildingObj){/*building*/
-		site.info=buildingObj.data;
-		site[buildingObj.data.name]=site.info;
-		site[buildingObj.data.id]=site.info;
+		site={entrances:{},racks:{},devices:{},ppanels:{},create:{},update:{},delete:{},counters:{}};
+		Object.assign(site,buildingObj.data);site.devices={};
 		document.getElementById('input_search').value=trimAddress(buildingObj.data.address);
 		let newTile=`
 			<div class="mobile-tile tile tile-building" id="`+buildingObj.data.id+`" name="`+buildingObj.data.name+`">
@@ -368,6 +395,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 					</div>
 				</div>
 				<div class="entrances-row" id="`+buildingObj.data.id+`.entrances"><!--табы подъездов--></div>
+				<div class="devices-without"><!--устройства вне шкафов--></div>
 			</div>`;
 		if(document.getElementById(buildingObj.data.id)){document.getElementById(buildingObj.data.id).remove()};/*удалить дубль если есть*/
 		document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile);
@@ -379,10 +407,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 			if(entrances.type=='floors'||entrances.data.length>0){/*наличие падиков*/
 				for(let entrance of entrances.data.filter(function(item){return !item.nioss_error})){/*перебор падиков*/
 					site.entrances[entrance.ENTRANCE_ID]=entrance;
-					site[toKP(entrance.ENTRANCE_NAME)]=site.entrances[entrance.ENTRANCE_ID];
-					site[entrance.ENTRANCE_ID]=site.entrances[entrance.ENTRANCE_ID];
 					document.getElementById(siteid+'.entrances').insertAdjacentHTML('beforeEnd',createEntrance(entrance));
-					document.getElementById(toKP(entrance.ENTRANCE_ID)+'_title').addEventListener('click',function(event){openModal(getType(entrance.ENTRANCE_NAME),site.entrances[entrance.ENTRANCE_ID]);event.stopPropagation();});
 					tabController('add',siteid,entrance);
 					for(let floor of entrance.floor){/*перебор этажей*/
 						document.getElementById(entrance.ENTRANCE_ID+((+floor.number>0)?'.over':'.under')).insertAdjacentHTML('beforeEnd',createFloor(entrance.ENTRANCE_ID,floor.number,'',floor.first,floor.last,floor.flats));
@@ -421,62 +446,74 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 						};
 					};
 					/*https://fx.mts.ru/call/nioss/get_nioss_object?object_id=9150196003413190786&object=entrance&fresh=0.13724313301188595*/
+					httpPost('/call/nioss/get_nioss_object',{object_id:entrance.ENTRANCE_ID,object:'entrance'},true).then(function(nioss_data){
+						Object.assign(site.entrances[entrance.ENTRANCE_ID],nioss_data);
+						document.getElementById(toKP(entrance.ENTRANCE_ID)+'_title').addEventListener('click',function(event){openModal(getType(entrance.ENTRANCE_NAME),site.entrances[entrance.ENTRANCE_ID],'update');event.stopPropagation();});
+					});
+					countObjects();
 				};
 				tabController('first');
 				httpPost('/call/device/site_rack_list',{'siteid':siteid},true).then(function(racks){
 					for(let rack of racks.filter(function(item){return !item.nioss_error})){
 						site.racks[rack.RACK_ID]=rack;
-						site[toKP(rack.RACK_NAME)]=site.racks[rack.RACK_ID];
-						site[rack.RACK_ID]=site.racks[rack.RACK_ID];
 						let container=rack.ENTRANCE_ID+'.'+((rack.OFF_FLOR=='Подвал')?'podval':(rack.OFF_FLOR=='Чердак')?'cherdak':(rack.OFF_FLOR=='Технический этаж')?'tehetag':('floor_'+rack.FLOOR))+((isCU(rack.RACK_NAME))?'.rk':(isL(rack.RACK_NAME))?'.racks':'.racks');
 						if(!document.getElementById(container)){/*если шкаф на этаже вне подъезда*//*ду0000000054КР-02878*/
 							document.getElementById(rack.ENTRANCE_ID+((rack.OFF_FLOR=='Подвал'||rack.FLOOR<=0)?'.under':'.over')).insertAdjacentHTML('beforeEnd',createFloor(rack.ENTRANCE_ID,rack.FLOOR,((rack.OFF_FLOR=='Подвал')?'podval':(rack.OFF_FLOR=='Чердак')?'cherdak':(rack.OFF_FLOR=='Технический этаж')?'tehetag':'')));
 						};
 						document.getElementById(container).insertAdjacentHTML('beforeEnd',createRack(rack));
-						document.getElementById(toKP(rack.RACK_ID)+'_title').addEventListener('click',function(event){openModal(getType(rack.RACK_NAME),site.racks[rack.RACK_ID]);event.stopPropagation();});
 						/*https://fx.mts.ru/call/nioss/get_nioss_object?object_id=9155155193713979363&object=rack*/
+						httpPost('/call/nioss/get_nioss_object',{object_id:rack.RACK_ID,object:'rack'},true).then(function(nioss_data){
+							Object.assign(site.racks[rack.RACK_ID],nioss_data);
+							document.getElementById(toKP(rack.RACK_ID)+'_title').addEventListener('click',function(event){openModal(getType(rack.RACK_NAME),site.racks[rack.RACK_ID],'update');event.stopPropagation();});
+						});
+						countObjects();
 					};
 					httpPost('/call/device/devices',{'siteid':siteid},true).then(function(devices){
 						devices.map(function(device){
 							site.devices[device.DEVICE_NIOSS_ID]=device;
-							site[toKP(device.DEVICE_NAME)]=site.devices[device.DEVICE_NIOSS_ID];
-							site[device.DEVICE_NIOSS_ID]=site.devices[device.DEVICE_NIOSS_ID];
 							let inrack=document.getElementById(toKP(device.DEVICE_NAME));
 							if(inrack){/*если есть в шкафу*/
 								document.getElementById(inrack.getAttribute('inrack')+'.devices_ne').insertAdjacentHTML('beforeEnd',createDevice(device));
-								document.getElementById(toKP(device.DEVICE_NAME)+'_title').addEventListener('click',function(event){openModal(getType(device.DEVICE_NAME),site.devices[device.DEVICE_NIOSS_ID]);event.stopPropagation();});
 							}else{
 								/*засунуть в фейковый шкаф, видимый из дома*/
+								document.getElementsByClassName('devices-without')[0].insertAdjacentHTML('beforeEnd',createDevice(device));
 							};
-							/*https://fx.mts.ru/call/nioss/get_nioss_object?object_id=9139024954813111146&object=device&fresh=0.4159634733802209*/
 							httpPost('/call/hdm/device_ping?fresh='+Math.random(),{'device':device},true).then(function(ping){
 								setPingLeds(device.DEVICE_NAME,ping.code);
 							});
+							/*https://fx.mts.ru/call/nioss/get_nioss_object?object_id=9139024954813111146&object=device&fresh=0.4159634733802209*/
+							httpPost('/call/nioss/get_nioss_object',{object_id:device.DEVICE_NIOSS_ID,object:'device'},true).then(function(nioss_data){
+								Object.assign(site.devices[device.DEVICE_NIOSS_ID],nioss_data);
+								document.getElementById(toKP(device.DEVICE_NAME)+'_title').addEventListener('click',function(event){openModal(getType(device.DEVICE_NAME),site.devices[device.DEVICE_NIOSS_ID],'update');event.stopPropagation();});
+							});
+							countObjects();
 						});
 					});
 					httpPost('/call/device/patch_panels',{'siteid':siteid},true).then(function(plints){
 						let ppanels=plints;for(let pp of ppanels){ppanels=ppanels.concat(pp.children);};/*поднятие из топологии*/
 						for(let pp of ppanels.filter(function(item){return !item.nioss_error})){
 							site.ppanels[pp.id]=pp;
-							site[toKP(pp.name)]=site.ppanels[pp.id];
-							site[pp.id]=site.ppanels[pp.id];
 							if(pp.rack_id=='0'){/*вне шкафа*//*type-PP without*/
 								let container=pp.entrance_id+'.floor_'+pp.n_floor+'.rk';
 								if(!document.getElementById(container)){/*если на этаже вне подъезда*/
 									document.getElementById(pp.entrance_id+((pp.n_floor<=0)?'.under':'.over')).insertAdjacentHTML('beforeEnd',createFloor(pp.entrance_id,pp.n_floor));
 								};
 								document.getElementById(container).insertAdjacentHTML('beforeEnd',createPP(pp));
-								document.getElementById(toKP(pp.name)+'_title').addEventListener('click',function(event){openModal(getType(pp.name),site.ppanels[pp.id]);event.stopPropagation();});
 							}else{
 								let container=document.getElementById(pp.rack_id+'.devices_pp');
 								if(container){/*если есть такой шкаф*/
 									container.insertAdjacentHTML('beforeEnd',createPP(pp));
-									document.getElementById(toKP(pp.name)+'_title').addEventListener('click',function(event){openModal(getType(pp.name),site.ppanels[pp.id]);event.stopPropagation();});
+									document.getElementById(toKP(pp.name)+'_title').addEventListener('click',function(event){openModal(getType(pp.name),site.ppanels[pp.id],'update');event.stopPropagation();});
 								}else{
 									/*засунуть в фейковый шкаф, видимый из подъезда*/
 								};
 							};
 							/*https://fx.mts.ru/call/nioss/get_nioss_object?object_id=9159380182913474553&object=plint&fresh=0.7991627879409933*/
+							httpPost('/call/nioss/get_nioss_object',{object_id:pp.id,object:'device'},true).then(function(nioss_data){
+								Object.assign(site.ppanels[pp.id],nioss_data);
+								document.getElementById(toKP(pp.name)+'_title').addEventListener('click',function(event){openModal(getType(pp.name),site.ppanels[pp.id],'update');event.stopPropagation();});
+							});
+							countObjects();
 						};
 					});
 				});
@@ -642,113 +679,231 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 	function createRackTitle(r){return getType(r.RACK_NAME)+'#'+getNum(r.RACK_NAME)};/*L#2*//*CU#46*/
 	function isL(name){return(getType(name)=='L')?true:false};
 	function isCU(name){return(getType(name)=='CU')?true:false};
-	function getTypeTitle(type){return {'P':'подъезд','L':'шкаф антивандальный','CU':'распред.коробка','PP':'патч-панель','CR':'плинт или кросс-панель','ETH':'коммутатор','OP':'опт.приемник','A':'коакс.усилитель','А':'коакс.усилитель'}[type];};
+	function getTypeTitle(type){return {'P':'подъезд','L':'шкаф антивандальный','CU':'распред.коробка','PP':'патч-панель','CR':'плинт или кросс-панель','ETH':'коммутатор','OP':'опт.приемник','A':'коакс.усилитель'}[type];};
 	
-	function openModal(type,obj){
+	let object={};
+	function openModal(type,obj,context='update'){
+		object={modifed:{}};
 		let defaultFields='';
 		let dialogFields='';
 		switch(type){
 			case'P':
-				defaultFields+=createField('default','Родитель',document.getElementsByClassName('tile-building')[0].getAttribute('name'));
-				defaultFields+=createField('default','NIOSS_id',obj.ENTRANCE_ID);
-				defaultFields+=createField('default','Название',toKP(obj.ENTRANCE_NAME));
-				defaultFields+=createField('area','Описание','_undefined',[],true);
-				dialogFields+=createField('text','высота',obj.FLOOR_COUNT);
-				dialogFields+=createField('text','квартира с',obj.FLAT_FROM);
-				dialogFields+=createField('text','квартира по',obj.FLAT_TO);
-				dialogFields+=createField('area','примечание','_undefined');
+				Object.assign(object,{/*имена столбцов для ММРД*/
+					/*readable*/
+					'Object_id':obj.ENTRANCE_ID,
+					'Тип':'Подъезд',
+					'Имя':/*toKP(obj.ENTRANCE_NAME)||*/obj.resource_business_name,
+					'Родитель':/*site.name||*/obj.parent.NCObjectKey,
+					'Описание объекта':obj.description,
+					'Имя узла':'',
+					'Номер подъезда':/*obj.ENTRANCE_NO||*/obj.NomerPodezda,
+					/*editable*/
+					'Количество этажей':/*obj.FLOOR_COUNT||*/obj.KolichestvoEtashei,
+					'Диапазон квартир в подъезде':/*obj.FLAT_FROM_TO||*/obj.DiapazonKvartirvPodezde,
+					'Количество стояков':obj.KolischestvoStoyakov,
+					'Примечание':obj.Primechanie,
+				});
+				
+				defaultFields+=createField('Родитель','default','Родитель',object['Родитель']);
+				defaultFields+=createField('Object_id','default','Object_id',object['Object_id']);
+				defaultFields+=createField('Имя','default','Name',object['Имя']);
+				defaultFields+=createField('','area','Описание',object['Описание объекта'],[],true);
+				
+				dialogFields+=createField('Количество этажей','text','высота',object['Количество этажей']);
+				dialogFields+=createField('Диапазон квартир в подъезде','text','квартиры',object['Диапазон квартир в подъезде']);
+				dialogFields+=createField('Количество стояков','text','стояков',object['Количество стояков'],['','1','2','3','4','5','6']);/*переделать селект на пары*/
+				dialogFields+=createField('Примечание','area','Примечание',object['Примечание']);
 			break;
 			case'L':case'CU':
-				defaultFields+=createField('default','Родитель',document.getElementById(obj.ENTRANCE_ID).getAttribute('name'));
-				defaultFields+=createField('default','NIOSS_id',obj.RACK_ID);
-				defaultFields+=createField('default','Название',toKP(obj.RACK_NAME));
-				defaultFields+=createField('select','Тип шкафа',type,['L','CU'],true);
-				defaultFields+=createField('area','Описание',obj.DESCRIPTION,[],true);
-				dialogFields+=createField('text','этаж',obj.FLOOR);
-				dialogFields+=createField('select','не этаж',obj.OFF_FLOOR,['','Чердак','Технический этаж','Подвал']);
-				dialogFields+=createField('text','место на этаже',obj.LOCATION);
-				dialogFields+=createField('text','имя ключа',obj.N_KEY);
-				dialogFields+=createField('area','примечание',obj.CIPHER_KEY);
+				Object.assign(object,{/*имена столбцов для ММРД*/
+					/*readable*/
+					'Object_id':obj.RACK_ID,
+					'Тип':'Шкаф',
+					'Тип шкафа':/*obj.RACK_TYPE||*/obj.TipShkafa,
+					'Имя':/*toKP(obj.RACK_NAME)||*/obj.resource_business_name,
+					'Родитель':/*obj.ENTRANCE_NAME||*/obj.parent.NCObjectKey,
+					'Описание объекта':/*obj.DESCRIPTION||*/obj.description,
+					/*editable*/
+					'Этаж':/*obj.FLOOR||*/obj.Etazh,
+					'Вне этажное размещение':/*obj.OFF_FLOOR||*/obj.VneEtashnoeRazmechenie,
+					'Расположение':/*obj.LOCATION||*/obj.RaspologenieShkaf,
+					/*переименовать*/'N_RACK_SITE':'',/*заготовка для атрибута "Номер стояка", временно разместить в N_RACK_SITE*/
+					'Номер ключа':/*obj.N_KEY||*/obj.NomerKlucha,
+					'Шифр ключа':/*obj.CIPHER_KEY||*/obj.ShifrKlucha,
+				});
+				
+				defaultFields+=createField('Родитель','default','Родитель',object['Родитель']);
+				defaultFields+=createField('Object_id','default','Object_id',object['Object_id']);
+				defaultFields+=createField('Имя','default','Name',object['Имя']);
+				defaultFields+=createField('','select','Тип шкафа',type,['L','CU'],true);/*переделать селект на пары*/
+				defaultFields+=createField('','area','Описание',object['Описание объекта'],[],true);
+				
+				dialogFields+=createField('Этаж','text','этаж',obj.FLOOR);
+				dialogFields+=createField('Вне этажное размещение','select','не этаж',obj.OFF_FLOOR,['','Чердак','Технический этаж','Подвал']);/*переделать селект на пары*/
+				dialogFields+=createField('Расположение','text','место',object['Расположение']);
+				dialogFields+=createField('N_RACK_SITE','text','стояк',object['N_RACK_SITE']);
+				dialogFields+=createField('Номер ключа','text','имя ключа',object['Номер ключа']);
+				dialogFields+=createField('Шифр ключа','area','Примечание',object['Шифр ключа']);
 			break;
-			case'ETH':case'OP':case'A':case'А':
-				defaultFields+=createField('default','Родитель',document.getElementsByClassName('tile-building')[0].getAttribute('name'));
-				defaultFields+=createField('default','NIOSS_id',obj.DEVICE_NIOSS_ID||obj.id);
-				defaultFields+=createField('default','Название',toKP(obj.DEVICE_NAME));
-				defaultFields+=createField('select','Тип элемента',type,['ETH','OP','A','А'],true);
-				defaultFields+=createField('area','Описание','_undefined',[],true);
-				dialogFields+=createField('select','шкаф','_undefined',['','_undefined','','']);
-				dialogFields+=createField('text','VENDOR',obj.VENDOR);
-				dialogFields+=createField('text','MODEL',obj.MODEL);
-				dialogFields+=createField('text','IP_ADDRESS',obj.IP_ADDRESS);
-				dialogFields+=createField('text','подъезды','_undefined');
-				dialogFields+=createField('area','примечание','_undefined');
+			case'ETH':case'OP':case'A':
+				Object.assign(object,{/*имена столбцов для ММРД*/
+					/*readable*/
+					'Object_id':obj.DEVICE_NIOSS_ID||obj.id,
+					'Тип':type,
+					'Имя':/*toKP(obj.DEVICE_NAME)||*/obj.resource_business_name,
+					'Родитель':/*site.name||*/obj.parent.NCObjectKey,
+					'Описание объекта':obj.description,
+					/*editable*/
+					'Псевдоним':/*obj.DISPLAY_NAME||*/obj.Alias,
+					/*переименовать*/'VENDOR':obj.VENDOR,
+					/*переименовать*/'MODEL':obj.MODEL,
+					/*переименовать*/'IP_ADDRESS':obj.IP_ADDRESS,
+					/*переименовать*/'SNMP_V':'',/*запросить device_info*/
+					/*переименовать*/'SNMP_C':'',/*запросить device_info*/
+					'Шкаф':((obj.ShkafPP)?(obj.ShkafPP.NCObjectKey):''),
+					/*переименовать*/'cable':'',/*заморочится выбрать из подъездов*/
+					'Примечание':obj.Primechanie,
+					
+				});
+				
+				defaultFields+=createField('Родитель','default','Родитель',object['Родитель']);
+				defaultFields+=createField('Object_id','default','Object_id',object['Object_id']);
+				defaultFields+=createField('Имя','default','Name',object['Имя']);
+				defaultFields+=createField('Псевдоним','text','Alias',object['Псевдоним']);
+				defaultFields+=createField('','select','Тип элемента',type,['ETH','OP','A'],true);/*переделать селект на пары*/
+				defaultFields+=createField('','area','Описание',object['Описание объекта'],[],true);
+				
+				dialogFields+=createField('Шкаф','select','Шкаф',object['Шкаф'],['',object['Шкаф'],'','']);/*переделать селект на пары*/
+				dialogFields+=createField('VENDOR','text','VENDOR',object['VENDOR']);
+				dialogFields+=createField('MODEL','text','MODEL',object['MODEL']);
+				dialogFields+=createField('IP_ADDRESS','text','IP_ADDRESS',object['IP_ADDRESS']);
+				dialogFields+=createField('SNMP_V','text','SNMP_V',object['SNMP_V']);
+				dialogFields+=createField('SNMP_C','text','SNMP_C',object['SNMP_C']);
+				dialogFields+=createField('cable','text','подъезды',object['cable']);
+				dialogFields+=createField('Примечание','area','Примечание',object['Примечание']);
 			break;
 			case'PP':case'CR':
-				defaultFields+=createField('default','Родитель',document.getElementById(obj.entrance_id).getAttribute('name'));
-				defaultFields+=createField('default','NIOSS_id',obj.id);
-				defaultFields+=createField('default','Название',toKP(obj.name));
-				defaultFields+=createField('text','модель',obj.model,[],true);
-				defaultFields+=createField('text','тип',obj.type,[],true);
-				defaultFields+=createField('text','расшивка',obj.port_pr_utp,[],true);
-				dialogFields+=createField('select','шкаф','_undefined',['','_undefined','','']);
-				dialogFields+=createField('text','этаж',obj.n_floor);
-				dialogFields+=createField('text','место на этаже',obj.location);
-				dialogFields+=createField('area','примечание',obj.description);
+				/*['Патч панель-6','Патч панель-8','Патч панель-12','Патч панель-24','Патч панель-48']*/
+				/*['Плинт 110-25','Плинт 110-50','Плинт 110-100','Плинт 110-200']*/
+				Object.assign(object,{/*имена столбцов для ММРД*/
+					/*readable*/
+					'Object_id':obj.id,
+					'Тип':((type=='PP')?'Патч-панель':'Плинт'),
+					'Имя':/*toKP(obj.name)||*/obj.resource_business_name,
+					'Родитель':/*obj.entrance_id||*/obj.parent.NCObjectKey,
+					'Тип ДРС':((/*obj.type||*/obj.TipDRS=='Transit')?'Транзитный':'Конечный'),
+					'Модель устройства':obj.model/*||obj.device_model*/,
+					'Количество задействованных пар UTP/FTP=1 Port Ethernet':((/*obj.port_pr_utp*/obj.KolichestvoZadeystvovannixParUtpFtpNaPortEth.includes('4'))?'4':'2'),
+					/*editable*/
+					'Шкаф':/*obj.rack_id||*/((obj.ShkafPP)?(obj.ShkafPP.NCObjectKey):''),
+					'Номер Этажа':/*obj.n_floor||*/obj.NomerEtazha,
+					'Расположение':/*obj.location||*/obj.Raspologenie,
+					/*переименовать*/'N_RACK_SITE':'',/*заготовка для атрибута "Номер стояка", временно разместить в N_RACK_SITE*/
+					/*переименовать*/'CABLE_TYPE':'',/*заготовка для атрибута "Тип кабеля"*/
+					/*переименовать*/'CABLE_LENGTH':'',/*заготовка для атрибута "Длинна кабеля"*/
+					'Примечание':obj.description,
+				});
+				
+				defaultFields+=createField('Родитель','default','Родитель',object['Родитель']);
+				defaultFields+=createField('Object_id','default','Object_id',object['Object_id']);
+				defaultFields+=createField('Имя','default','Name',object['Имя']);
+				defaultFields+=createField('','text','Тип ДРС',object['Тип ДРС'],[],true);
+				defaultFields+=createField('','text','Модель',object['Модель устройства'],[],true);
+				defaultFields+=createField('','select','Расшивка',object['Количество задействованных пар UTP/FTP=1 Port Ethernet'],['','2','4'],true);/*переделать селект на пары*/
+				
+				dialogFields+=createField('Шкаф','select','Шкаф',object['Шкаф'],['',object['Шкаф'],'','']);/*переделать селект на пары*/
+				dialogFields+=createField('Номер Этажа','text','Этаж',object['Номер Этажа']);
+				dialogFields+=createField('Расположение','text','место',object['Расположение']);
+				dialogFields+=createField('N_RACK_SITE','text','стояк',object['N_RACK_SITE']);
+				dialogFields+=createField('CABLE_TYPE','select','тип кабеля',object['CABLE_TYPE'],['','UTP-10','UTP-25','UTP-50','FTP-10','FTP-25','FTP-50']);/*переделать селект на пары*/
+				dialogFields+=createField('CABLE_LENGTH','text','длинна кабеля',object['CABLE_LENGTH']);
+				dialogFields+=createField('Примечание','area','Примечание',object['Примечание']);
 			break;
 		};
-		document.getElementById('error').insertAdjacentHTML('afterEnd',`
-			<div class="modal-wrapper" id="modal">
-				<div class="modal">
-					<div class="dialog-head">
-						<div class="dialog-title">`+getTypeTitle(type)+`</div>
-						<button type="button" id="btn_close">X</button>
-					</div>
-					<div class="fields">`+defaultFields+`</div>
-					<div class="fields">`+dialogFields+`</div>
-					<div class="dialog-buttons">
-						<button type="button" id="btn_cancel">cancel</button>
-						<button type="button" id="btn_delete">delete</button>
-						<button type="button" id="btn_copy">copy</button>
-						<button type="button" id="btn_save">save</button>
+		if(defaultFields||dialogFields){
+			document.getElementById('error').insertAdjacentHTML('afterEnd',`
+				<div class="modal-wrapper" id="modal" name="`+context+`">
+					<div class="modal">
+						<div class="dialog-head">
+							<div class="dialog-title">`+getTypeTitle(type)+`</div>
+							<button type="button" id="btn_close">X</button>
+						</div>
+						<div class="fields">`+defaultFields+`</div>
+						<div class="fields">`+dialogFields+`</div>
+						<div class="dialog-buttons">
+							<button type="button" id="btn_delete" disabled>delete</button>
+							<button type="button" id="btn_copy" disabled>copy</button>
+							<button type="button" id="btn_save">save</button>
+							<button type="button" id="btn_cancel">cancel</button>
+						</div>
 					</div>
 				</div>
-			</div>
-		`);
-		document.getElementById('btn_close').addEventListener('click',function(){document.getElementById('modal').remove();});
-		document.getElementById('btn_cancel').addEventListener('click',function(){document.getElementById('modal').remove();});
-		document.getElementById('btn_delete').addEventListener('click',function(){document.getElementById('modal').remove();});
-		document.getElementById('btn_copy').addEventListener('click',function(){document.getElementById('modal').remove();});
-		document.getElementById('btn_save').addEventListener('click',function(){document.getElementById('modal').remove();});
+			`);
+			document.getElementById('btn_close').addEventListener('click',function(){document.getElementById('modal').remove();object={};});
+			document.getElementById('btn_delete').addEventListener('click',function(){});
+			document.getElementById('btn_copy').addEventListener('click',function(){});
+			document.getElementById('btn_save').addEventListener('click',function(){getInputValues();});
+			document.getElementById('btn_cancel').addEventListener('click',function(){document.getElementById('modal').remove();object={};});
+		};
 	};
-	function createField(type='',title='',value='',values=[],readonly=false){
+	function getInputValues(){
+		let modalform=document.getElementById('modal');
+		for(let elem of modalform.getElementsByTagName('div')){
+			object.modifed[elem.name]=elem.innerHTML;
+		};
+		for(let elem of modalform.getElementsByTagName('input')){
+			object.modifed[elem.name]=elem.value;
+		};
+		for(let elem of modalform.getElementsByTagName('select')){
+			object.modifed[elem.name]=elem.value;
+		};
+		site[modalform.name][object['Имя']]=object;
+		countObjects();
+	};
+	function createField(name='',type='',title='',value='',values=[],readonly=false){
 		switch(type){
 			case'text':
-				return `<div class="field field-title">`+title+`</div><div class="field field-input"><input type="text" value="`+(value||'')+`" `+((readonly)?`disabled`:``)+`></div>`;
+				return `<div class="field field-title">`+title+`</div><div class="field field-input"><input type="text" name="`+(name||'')+`" value="`+(value||'')+`" `+((readonly)?`disabled`:``)+`></div>`;
 			break;
 			case'area':
-				return `<div class="field field-title">`+title+`</div><div class="field field-input"><input type="text" value="`+(value||'')+`" `+((readonly)?`disabled`:``)+`></div>`;
+				return `<div class="field field-title">`+title+`</div><div class="field field-input"><input type="text" name="`+(name||'')+`" value="`+(value||'')+`" `+((readonly)?`disabled`:``)+`></div>`;
 			break;
 			case'select':
 				let options='';for(let option of values){options+=`<option `+((option==value)?`selected`:``)+`>`+(option||'')+`</option>`;};
 				return `
 					<div class="field field-title">`+title+`</div><div class="field field-input">
-						<select `+((readonly)?`disabled`:``)+`>
+						<select name="`+(name||'')+`" `+((readonly)?`disabled`:``)+`>
 							`+options+`
 						</select>
 					</div>`;
 			break;
 			default:
-				return `<div class="field field-title">`+title+`</div><div class="field field-input">`+(value||'')+`</div>`;
+				return `<div class="field field-title">`+title+`</div><div class="field field-input"><div name="`+(name||'')+`">`+(value||'')+`</div></div>`;
 		};
 	};
-	
+	function countObjects(){
+		site.counters={onsite:0,create:0,update:0,delete:0,};
+		for(let key in site.entrances){site.counters.onsite++};
+		for(let key in site.racks){site.counters.onsite++};
+		for(let key in site.devices){site.counters.onsite++};
+		for(let key in site.ppanels){site.counters.onsite++};
+		for(let key in site.update){site.counters.update++};
+		for(let key in site.create){site.counters.create++};
+		for(let key in site.delete){site.counters.delete++};
+		if(document.getElementsByClassName('counters').length){
+			document.getElementById('onsite').innerHTML=site.counters.onsite;
+			document.getElementById('create').innerHTML=site.counters.create;
+			document.getElementById('update').innerHTML=site.counters.update;
+			document.getElementById('delete').innerHTML=site.counters.delete;
+		};
+	};
 	function saveSite(){
-		let object={
+		let bodyObj={
 			action:'saveSite',
 			site_id:site.info.id,
 			object:recursiveClear(site),
 		};
-		fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json;charset=utf-8'},body:JSON.stringify(object)}).then(function(){});
+		fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json;charset=utf-8'},body:JSON.stringify(bodyObj)}).then(function(){});
 	};
 	function recursiveClear(obj){
 		for(let elem in obj){
