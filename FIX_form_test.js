@@ -272,7 +272,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 			`;
 		};
 		document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile);
-		if(document.getElementById('btn_task')){document.getElementById('btn_task').addEventListener('click',createNewTask);};
+		if(document.getElementById('btn_task')){document.getElementById('btn_task').addEventListener('click',function(){createNewTask(site);})};
 		countObjects();
 	};			
 	function createNewTask_old(){
@@ -286,7 +286,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 			console.log('task_id',obj.task_id);getTaskList();
 		});
 	};
-	function createNewTask(){
+	function createNewTask(site){
 		let prms={
 			action:'addTask',
 			login:inetcoreUsername,
@@ -294,8 +294,15 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 			site_id:document.getElementsByClassName('tile-building')[0].getAttribute('id'),
 			site_name:document.getElementsByClassName('tile-building')[0].getAttribute('name'),
 			description:document.getElementById('input_task').value,
+			objects:JSON.stringify({
+				create:site.create,
+				update:site.update,
+				delete:site.delete,
+				counters:site.counters,
+			}),
 		};
 		fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json;charset=utf-8'},body:JSON.stringify(prms)}).then(function(){getTaskList();});
+		clearUpdates();
 	};
 	function showError(str){createErrorTile({'text':str})};/*обернуть ошибку*/
 	function createErrorTile(result){/*ошибку поиска*/
@@ -382,8 +389,9 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 	function trimAddress(addr){let addrArr=addr.split(', ').reverse();return addrArr[1].replace(/\s/g,'')+' '+addrArr[0].replace(/\s/g,'')};
 	let site={};presetSite();
 	function presetSite(){site={entrances:{},racks:{},devices:{},ppanels:{},create:{},update:{},delete:{},counters:{}};}
+	function clearUpdates(){site.create={};site.update={};site.delete={};countObjects();};
 	function createBuildingTile(buildingObj){/*building*/
-		site={entrances:{},racks:{},devices:{},ppanels:{},create:{},update:{},delete:{},counters:{}};
+		presetSite();
 		Object.assign(site,buildingObj.data);site.devices={};
 		document.getElementById('input_search').value=trimAddress(buildingObj.data.address);
 		let newTile=`
@@ -839,16 +847,23 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 					</div>
 				</div>
 			`);
-			document.getElementById('btn_close').addEventListener('click',function(){document.getElementById('modal').remove();object={};});
+			document.getElementById('btn_close').addEventListener('click',function(){closeModal();});
 			document.getElementById('btn_delete').addEventListener('click',function(){});
 			document.getElementById('btn_copy').addEventListener('click',function(){});
-			document.getElementById('btn_save').addEventListener('click',function(){getInputValues();});
-			document.getElementById('btn_cancel').addEventListener('click',function(){document.getElementById('modal').remove();object={};});
+			document.getElementById('btn_save').addEventListener('click',function(){getInputValues();closeModal();});
+			document.getElementById('btn_cancel').addEventListener('click',function(){closeModal();});
+			if(site.create[object['Имя']]||site.update[object['Имя']]||site.delete[object['Имя']]){
+				/*переделать на удаление из modifed*/
+				document.getElementById('btn_save').setAttribute('disabled','disabled');
+			};
 		};
+	};
+	function closeModal(){
+		document.getElementById('modal').remove();object={};
 	};
 	function getInputValues(){
 		let modalform=document.getElementById('modal');
-		for(let elem of modalform.getElementsByTagName('div')){
+		for(let elem of modalform.getElementsByTagName('span')){
 			object.modifed[elem.name]=elem.innerHTML;
 		};
 		for(let elem of modalform.getElementsByTagName('input')){
@@ -857,7 +872,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 		for(let elem of modalform.getElementsByTagName('select')){
 			object.modifed[elem.name]=elem.value;
 		};
-		site[modalform.name][object['Имя']]=object;
+		site[modalform.getAttribute('name')][object['Имя']]=object;
 		countObjects();
 	};
 	function createField(name='',type='',title='',value='',values=[],readonly=false){
@@ -878,7 +893,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 					</div>`;
 			break;
 			default:
-				return `<div class="field field-title">`+title+`</div><div class="field field-input"><div name="`+(name||'')+`">`+(value||'')+`</div></div>`;
+				return `<div class="field field-title">`+title+`</div><div class="field field-input"><span name="`+(name||'')+`">`+(value||'')+`</span></div>`;
 		};
 	};
 	function countObjects(){
@@ -911,6 +926,10 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 				return recursiveClear(obj[elem]);
 			}else if(typeof obj[elem]==='string'){
 				obj[elem]=recursiveReplace(obj[elem]);
+			}else if(typeof obj[elem]==='array'){
+				for(let el of obj[elem]){
+					return recursiveClear(el);
+				};
 			};
 		};
 		return obj;
