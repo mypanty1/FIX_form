@@ -3,7 +3,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 	/*todo*/
 	/*try{}catch(e){}finally{};*/
 	
-	let dev=false;
+	let dev=true;
 	let input='';
 	if(dev){
 		window.AppInventor={
@@ -274,17 +274,6 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 		document.getElementsByClassName('tile-search')[0].insertAdjacentHTML('afterEnd',newTile);
 		if(document.getElementById('btn_task')){document.getElementById('btn_task').addEventListener('click',function(){createNewTask(site);})};
 		countObjects();
-	};			
-	function createNewTask_old(){
-		let url='https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec';
-		let prms='?action=addTask&login='+inetcoreUsername
-		+'&address='+document.getElementById('input_search').value
-		+'&site_id='+document.getElementsByClassName('tile-building')[0].getAttribute('id')
-		+'&site_name='+document.getElementsByClassName('tile-building')[0].getAttribute('name')
-		+'&description='+document.getElementById('input_task').value;
-		fetch(url+prms).then(response=>response.json()).then(function(obj){
-			console.log('task_id',obj.task_id);getTaskList();
-		});
 	};
 	function createNewTask(site){
 		let prms={
@@ -294,7 +283,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 			site_id:document.getElementsByClassName('tile-building')[0].getAttribute('id'),
 			site_name:document.getElementsByClassName('tile-building')[0].getAttribute('name'),
 			description:document.getElementById('input_task').value,
-			objects:JSON.stringify({
+			json:JSON.stringify({
 				create:site.create,
 				update:site.update,
 				delete:site.delete,
@@ -388,8 +377,9 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 	};
 	function trimAddress(addr){let addrArr=addr.split(', ').reverse();return addrArr[1].replace(/\s/g,'')+' '+addrArr[0].replace(/\s/g,'')};
 	let site={};presetSite();
-	function presetSite(){site={entrances:{},racks:{},devices:{},ppanels:{},create:{},update:{},delete:{},counters:{}};}
-	function clearUpdates(){site.create={};site.update={};site.delete={};countObjects();};
+	function presetSite(){site={entrances:{},racks:{},devices:{},ppanels:{},create:{},update:{},delete:{},counters:{}};clearUpdates();}
+	function clearUpdates(){site.create=presetSheets();site.update=presetSheets();site.delete=presetSheets();countObjects();};
+	function presetSheets(){return {entrances:{},racks:{},devices:{},ppanels:{},plints:{},}};
 	function createBuildingTile(buildingObj){/*building*/
 		presetSite();
 		Object.assign(site,buildingObj.data);site.devices={};
@@ -697,89 +687,94 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 		switch(type){
 			case'P':
 				Object.assign(object,{/*имена столбцов для ММРД*/
+					/*маркер таблицы*/
+					'sheet':'entrances',
 					/*readable*/
 					'Object_id':obj.ENTRANCE_ID,
 					'Тип':'Подъезд',
 					'Имя':/*toKP(obj.ENTRANCE_NAME)||*/obj.resource_business_name,
-					'Родитель':/*site.name||*/obj.parent.NCObjectKey,
-					'Описание объекта':obj.description,
-					'Имя узла':'',
+					'Родитель':/*site.name||*/obj.parent.NCObjectKey,/*преобразовать в имя*/
+					'Описание объекта':((obj.description)?(obj.description):''),
 					'Номер подъезда':/*obj.ENTRANCE_NO||*/obj.NomerPodezda,
 					/*editable*/
 					'Количество этажей':/*obj.FLOOR_COUNT||*/obj.KolichestvoEtashei,
 					'Диапазон квартир в подъезде':/*obj.FLAT_FROM_TO||*/obj.DiapazonKvartirvPodezde,
-					'Количество стояков':obj.KolischestvoStoyakov,
-					'Примечание':obj.Primechanie,
+					'Количество стояков':((obj.KolischestvoStoyakov)?(obj.KolischestvoStoyakov):''),
+					'Примечание':((obj.Primechanie)?(obj.Primechanie):''),
 				});
 				
-				defaultFields+=createField('Родитель','default','Родитель',object['Родитель']);
-				defaultFields+=createField('Object_id','default','Object_id',object['Object_id']);
-				defaultFields+=createField('Имя','default','Name',object['Имя']);
-				defaultFields+=createField('','area','Описание',object['Описание объекта'],[],true);
+				defaultFields+=createField('','default','Родитель',object['Родитель']);
+				defaultFields+=createField('','default','Object_id',object['Object_id']);
+				defaultFields+=createField('','default','Имя',object['Имя']);
+				defaultFields+=createField('','text','Описание',object['Описание объекта'],[],true);
 				
 				dialogFields+=createField('Количество этажей','text','высота',object['Количество этажей']);
 				dialogFields+=createField('Диапазон квартир в подъезде','text','квартиры',object['Диапазон квартир в подъезде']);
-				dialogFields+=createField('Количество стояков','text','стояков',object['Количество стояков'],['','1','2','3','4','5','6']);/*переделать селект на пары*/
-				dialogFields+=createField('Примечание','area','Примечание',object['Примечание']);
+				dialogFields+=createField('Количество стояков','select','стояков',object['Количество стояков'],['','1','2','3','4','5','6']);/*переделать селект на пары*/
+				dialogFields+=createField('Примечание','text','Примечание',object['Примечание']);
 			break;
 			case'L':case'CU':
 				Object.assign(object,{/*имена столбцов для ММРД*/
+					/*маркер таблицы*/
+					'sheet':'racks',
 					/*readable*/
 					'Object_id':obj.RACK_ID,
 					'Тип':'Шкаф',
 					'Тип шкафа':/*obj.RACK_TYPE||*/obj.TipShkafa,
 					'Имя':/*toKP(obj.RACK_NAME)||*/obj.resource_business_name,
-					'Родитель':/*obj.ENTRANCE_NAME||*/obj.parent.NCObjectKey,
-					'Описание объекта':/*obj.DESCRIPTION||*/obj.description,
+					'Родитель':/*obj.ENTRANCE_NAME||*/obj.parent.NCObjectKey,/*преобразовать в имя*/
+					'Описание объекта':/*obj.DESCRIPTION||*/((obj.description)?(obj.description):''),
 					/*editable*/
 					'Этаж':/*obj.FLOOR||*/obj.Etazh,
-					'Вне этажное размещение':/*obj.OFF_FLOOR||*/obj.VneEtashnoeRazmechenie,
-					'Расположение':/*obj.LOCATION||*/obj.RaspologenieShkaf,
-					/*переименовать*/'N_RACK_SITE':'',/*заготовка для атрибута "Номер стояка", временно разместить в N_RACK_SITE*/
-					'Номер ключа':/*obj.N_KEY||*/obj.NomerKlucha,
-					'Шифр ключа':/*obj.CIPHER_KEY||*/obj.ShifrKlucha,
+					'Вне этажное размещение':/*obj.OFF_FLOOR||*/((obj.VneEtashnoeRazmechenie)?(obj.VneEtashnoeRazmechenie):''),
+					'Расположение':/*obj.LOCATION||*/((obj.RaspologenieShkaf)?(obj.RaspologenieShkaf):''),
+					'DRS_NAME':'',/*заготовка для атрибута "Номер стояка"*/
+					'Номер ключа':/*obj.N_KEY||*/((obj.NomerKlucha)?(obj.NomerKlucha):''),
+					'Шифр ключа':/*obj.CIPHER_KEY||*/((obj.ShifrKlucha)?(obj.ShifrKlucha):''),
 				});
 				
-				defaultFields+=createField('Родитель','default','Родитель',object['Родитель']);
-				defaultFields+=createField('Object_id','default','Object_id',object['Object_id']);
-				defaultFields+=createField('Имя','default','Name',object['Имя']);
+				defaultFields+=createField('','default','Родитель',object['Родитель']);
+				defaultFields+=createField('','default','Object_id',object['Object_id']);
+				defaultFields+=createField('','default','Имя',object['Имя']);
 				defaultFields+=createField('','select','Тип шкафа',type,['L','CU'],true);/*переделать селект на пары*/
-				defaultFields+=createField('','area','Описание',object['Описание объекта'],[],true);
+				defaultFields+=createField('','text','Описание',object['Описание объекта'],[],true);
 				
-				dialogFields+=createField('Этаж','text','этаж',obj.FLOOR);
-				dialogFields+=createField('Вне этажное размещение','select','не этаж',obj.OFF_FLOOR,['','Чердак','Технический этаж','Подвал']);/*переделать селект на пары*/
+				dialogFields+=createField('Этаж','text','этаж',object['Этаж']);
+				dialogFields+=createField('Вне этажное размещение','select','не этаж',object['Вне этажное размещение'],['','Чердак','Технический этаж','Подвал']);/*переделать селект на пары*/
 				dialogFields+=createField('Расположение','text','место',object['Расположение']);
-				dialogFields+=createField('N_RACK_SITE','text','стояк',object['N_RACK_SITE']);
+				dialogFields+=createField('DRS_NAME','text','стояк',object['DRS_NAME']);
 				dialogFields+=createField('Номер ключа','text','имя ключа',object['Номер ключа']);
-				dialogFields+=createField('Шифр ключа','area','Примечание',object['Шифр ключа']);
+				dialogFields+=createField('Шифр ключа','text','Примечание',object['Шифр ключа']);
 			break;
 			case'ETH':case'OP':case'A':
 				Object.assign(object,{/*имена столбцов для ММРД*/
+					/*маркер таблицы*/
+					'sheet':'devices',
 					/*readable*/
 					'Object_id':obj.DEVICE_NIOSS_ID||obj.id,
 					'Тип':type,
 					'Имя':/*toKP(obj.DEVICE_NAME)||*/obj.resource_business_name,
-					'Родитель':/*site.name||*/obj.parent.NCObjectKey,
-					'Описание объекта':obj.description,
+					'Родитель':/*site.name||*/obj.parent.NCObjectKey,/*преобразовать в имя*/
+					'Описание объекта':((obj.description)?(obj.description):''),
 					/*editable*/
-					'Псевдоним':/*obj.DISPLAY_NAME||*/obj.Alias,
-					/*переименовать*/'VENDOR':obj.VENDOR,
-					/*переименовать*/'MODEL':obj.MODEL,
-					/*переименовать*/'IP_ADDRESS':obj.IP_ADDRESS,
-					/*переименовать*/'SNMP_V':'',/*запросить device_info*/
-					/*переименовать*/'SNMP_C':'',/*запросить device_info*/
-					'Шкаф':((obj.ShkafPP)?(obj.ShkafPP.NCObjectKey):''),
-					/*переименовать*/'cable':'',/*заморочится выбрать из подъездов*/
-					'Примечание':obj.Primechanie,
+					'Псевдоним':/*obj.DISPLAY_NAME||*/((obj.Alias)?(obj.Alias):''),
+					/*переименовать для ММРД*/'VENDOR':((obj.VENDOR)?(obj.VENDOR):''),
+					/*переименовать для ММРД*/'MODEL':((obj.MODEL)?(obj.MODEL):''),
+					/*переименовать для ММРД*/'IP_ADDRESS':((obj.IP_ADDRESS)?(obj.IP_ADDRESS):''),
+					/*переименовать для ММРД*/'SNMP_V':'',/*запросить device_info*/
+					/*переименовать для ММРД*/'SNMP_C':'',/*запросить device_info*/
+					'Шкаф':((obj.ShkafPP)?(obj.ShkafPP.NCObjectKey):''),/*преобразовать в имя*/
+					/*переименовать для ММРД*/'cable':'',/*заморочится выбрать из подъездов*/
+					'Примечание':((obj.Primechanie)?(obj.Primechanie):''),
 					
 				});
 				
-				defaultFields+=createField('Родитель','default','Родитель',object['Родитель']);
-				defaultFields+=createField('Object_id','default','Object_id',object['Object_id']);
-				defaultFields+=createField('Имя','default','Name',object['Имя']);
+				defaultFields+=createField('','default','Родитель',object['Родитель']);
+				defaultFields+=createField('','default','Object_id',object['Object_id']);
+				defaultFields+=createField('','default','Имя',object['Имя']);
 				defaultFields+=createField('Псевдоним','text','Alias',object['Псевдоним']);
 				defaultFields+=createField('','select','Тип элемента',type,['ETH','OP','A'],true);/*переделать селект на пары*/
-				defaultFields+=createField('','area','Описание',object['Описание объекта'],[],true);
+				defaultFields+=createField('','text','Описание',object['Описание объекта'],[],true);
 				
 				dialogFields+=createField('Шкаф','select','Шкаф',object['Шкаф'],['',object['Шкаф'],'','']);/*переделать селект на пары*/
 				dialogFields+=createField('VENDOR','text','VENDOR',object['VENDOR']);
@@ -788,33 +783,35 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 				dialogFields+=createField('SNMP_V','text','SNMP_V',object['SNMP_V']);
 				dialogFields+=createField('SNMP_C','text','SNMP_C',object['SNMP_C']);
 				dialogFields+=createField('cable','text','подъезды',object['cable']);
-				dialogFields+=createField('Примечание','area','Примечание',object['Примечание']);
+				dialogFields+=createField('Примечание','text','Примечание',object['Примечание']);
 			break;
 			case'PP':case'CR':
 				/*['Патч панель-6','Патч панель-8','Патч панель-12','Патч панель-24','Патч панель-48']*/
 				/*['Плинт 110-25','Плинт 110-50','Плинт 110-100','Плинт 110-200']*/
 				Object.assign(object,{/*имена столбцов для ММРД*/
+					/*маркер таблицы*/
+					'sheet':((type=='PP')?'ppanels':'plints'),
 					/*readable*/
 					'Object_id':obj.id,
 					'Тип':((type=='PP')?'Патч-панель':'Плинт'),
 					'Имя':/*toKP(obj.name)||*/obj.resource_business_name,
-					'Родитель':/*obj.entrance_id||*/obj.parent.NCObjectKey,
+					'Родитель':/*obj.entrance_id||*/obj.parent.NCObjectKey,/*преобразовать в имя*/
 					'Тип ДРС':((/*obj.type||*/obj.TipDRS=='Transit')?'Транзитный':'Конечный'),
-					'Модель устройства':obj.model/*||obj.device_model*/,
-					'Количество задействованных пар UTP/FTP=1 Port Ethernet':((/*obj.port_pr_utp*/obj.KolichestvoZadeystvovannixParUtpFtpNaPortEth.includes('4'))?'4':'2'),
+					'Модель устройства':obj.model/*||obj.device_model*/,/*имя модели, для id нужно городить таблицу соответствий*/
+					'Количество задействованных пар UTP/FTP=1 Port Ethernet':((/*obj.port_pr_utp*/obj.KolichestvoZadeystvovannixParUtpFtpNaPortEth&&obj.KolichestvoZadeystvovannixParUtpFtpNaPortEth.includes('4'))?'4':'2'),
 					/*editable*/
-					'Шкаф':/*obj.rack_id||*/((obj.ShkafPP)?(obj.ShkafPP.NCObjectKey):''),
+					'Шкаф':/*obj.rack_id||*/((obj.ShkafPP)?(obj.ShkafPP.NCObjectKey):''),/*преобразовать в имя*/
 					'Номер Этажа':/*obj.n_floor||*/obj.NomerEtazha,
-					'Расположение':/*obj.location||*/obj.Raspologenie,
-					/*переименовать*/'N_RACK_SITE':'',/*заготовка для атрибута "Номер стояка", временно разместить в N_RACK_SITE*/
-					/*переименовать*/'CABLE_TYPE':'',/*заготовка для атрибута "Тип кабеля"*/
-					/*переименовать*/'CABLE_LENGTH':'',/*заготовка для атрибута "Длинна кабеля"*/
-					'Примечание':obj.description,
+					'Расположение':/*obj.location||*/((obj.Raspologenie)?(obj.Raspologenie):''),
+					'DRS_NAME':'',/*заготовка для атрибута "Номер стояка"*/
+					'CABLE_TYPE':'',/*заготовка для атрибута "Тип кабеля"*/
+					'CABLE_LENGTH':'',/*заготовка для атрибута "Длинна кабеля"*/
+					'Примечание':((obj.description)?(obj.description):''),
 				});
 				
-				defaultFields+=createField('Родитель','default','Родитель',object['Родитель']);
-				defaultFields+=createField('Object_id','default','Object_id',object['Object_id']);
-				defaultFields+=createField('Имя','default','Name',object['Имя']);
+				defaultFields+=createField('','default','Родитель',object['Родитель']);
+				defaultFields+=createField('','default','Object_id',object['Object_id']);
+				defaultFields+=createField('','default','Имя',object['Имя']);
 				defaultFields+=createField('','text','Тип ДРС',object['Тип ДРС'],[],true);
 				defaultFields+=createField('','text','Модель',object['Модель устройства'],[],true);
 				defaultFields+=createField('','select','Расшивка',object['Количество задействованных пар UTP/FTP=1 Port Ethernet'],['','2','4'],true);/*переделать селект на пары*/
@@ -822,15 +819,15 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 				dialogFields+=createField('Шкаф','select','Шкаф',object['Шкаф'],['',object['Шкаф'],'','']);/*переделать селект на пары*/
 				dialogFields+=createField('Номер Этажа','text','Этаж',object['Номер Этажа']);
 				dialogFields+=createField('Расположение','text','место',object['Расположение']);
-				dialogFields+=createField('N_RACK_SITE','text','стояк',object['N_RACK_SITE']);
+				dialogFields+=createField('DRS_NAME','text','стояк',object['DRS_NAME']);
 				dialogFields+=createField('CABLE_TYPE','select','тип кабеля',object['CABLE_TYPE'],['','UTP-10','UTP-25','UTP-50','FTP-10','FTP-25','FTP-50']);/*переделать селект на пары*/
 				dialogFields+=createField('CABLE_LENGTH','text','длинна кабеля',object['CABLE_LENGTH']);
-				dialogFields+=createField('Примечание','area','Примечание',object['Примечание']);
+				dialogFields+=createField('Примечание','text','Примечание',object['Примечание']);
 			break;
 		};
 		if(defaultFields||dialogFields){
 			document.getElementById('error').insertAdjacentHTML('afterEnd',`
-				<div class="modal-wrapper" id="modal" name="`+context+`">
+				<div class="modal-wrapper" id="modal">
 					<div class="modal">
 						<div class="dialog-head">
 							<div class="dialog-title">`+getTypeTitle(type)+`</div>
@@ -852,48 +849,51 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 			document.getElementById('btn_copy').addEventListener('click',function(){});
 			document.getElementById('btn_save').addEventListener('click',function(){getInputValues();closeModal();});
 			document.getElementById('btn_cancel').addEventListener('click',function(){closeModal();});
-			if(site.create[object['Имя']]||site.update[object['Имя']]||site.delete[object['Имя']]){
-				/*переделать на удаление из modifed*/
-				document.getElementById('btn_save').setAttribute('disabled','disabled');
+		};
+		function getInputValues(){
+			let modalform=document.getElementById('modal');
+			for(let elem of modalform.getElementsByTagName('input')){
+				if(elem&&elem.name){
+					object.modifed[elem.name]=elem.value;
+				};
 			};
+			for(let elem of modalform.getElementsByTagName('select')){
+				if(elem&&elem.name){
+					object.modifed[elem.name]=elem.value;
+				};
+			};
+			/*перебрать контексты и удалить от туда по id*/
+			for(let key in site.create[object['sheet']]){if(site.create[object['sheet']][key]){site.create[object['sheet']][key]=null};};
+			for(let key in site.update[object['sheet']]){if(site.update[object['sheet']][key]){site.update[object['sheet']][key]=null};};
+			for(let key in site.delete[object['sheet']]){if(site.delete[object['sheet']][key]){site.delete[object['sheet']][key]=null};};
+			/*Array.prototype.push.apply(site[modalform.getAttribute('context')],[object]);*//*Array.prototype.push.apply(arr1,arr2)*/
+			/*site[modalform.getAttribute('context')].push(...[object]);*//*arr1.push(...arr2)*/
+			console.log(object);
+			site[context][object['sheet']][object['Object_id']]=object;
+			console.log(site[context][object['sheet']][object['Object_id']]);
+			countObjects();
 		};
 	};
 	function closeModal(){
 		document.getElementById('modal').remove();object={};
 	};
-	function getInputValues(){
-		let modalform=document.getElementById('modal');
-		for(let elem of modalform.getElementsByTagName('span')){
-			object.modifed[elem.name]=elem.innerHTML;
-		};
-		for(let elem of modalform.getElementsByTagName('input')){
-			object.modifed[elem.name]=elem.value;
-		};
-		for(let elem of modalform.getElementsByTagName('select')){
-			object.modifed[elem.name]=elem.value;
-		};
-		site[modalform.getAttribute('name')][object['Имя']]=object;
-		countObjects();
-	};
+	
 	function createField(name='',type='',title='',value='',values=[],readonly=false){
 		switch(type){
 			case'text':
-				return `<div class="field field-title">`+title+`</div><div class="field field-input"><input type="text" name="`+(name||'')+`" value="`+(value||'')+`" `+((readonly)?`disabled`:``)+`></div>`;
-			break;
-			case'area':
-				return `<div class="field field-title">`+title+`</div><div class="field field-input"><input type="text" name="`+(name||'')+`" value="`+(value||'')+`" `+((readonly)?`disabled`:``)+`></div>`;
+				return `<div class="field field-title">`+title+`</div><div class="field field-input"><input type="text" `+((name)?`name="`+name+`"`:'')+` value="`+(value||'')+`" `+((readonly)?`disabled`:``)+`></div>`;
 			break;
 			case'select':
 				let options='';for(let option of values){options+=`<option `+((option==value)?`selected`:``)+`>`+(option||'')+`</option>`;};
 				return `
 					<div class="field field-title">`+title+`</div><div class="field field-input">
-						<select name="`+(name||'')+`" `+((readonly)?`disabled`:``)+`>
+						<select `+((name)?`name="`+name+`"`:'')+` `+((readonly)?`disabled`:``)+`>
 							`+options+`
 						</select>
 					</div>`;
 			break;
 			default:
-				return `<div class="field field-title">`+title+`</div><div class="field field-input"><span name="`+(name||'')+`">`+(value||'')+`</span></div>`;
+				return `<div class="field field-title">`+title+`</div><div class="field field-input"><span>`+(value||'')+`</span></div>`;
 		};
 	};
 	function countObjects(){
@@ -902,9 +902,21 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 		for(let key in site.racks){site.counters.onsite++};
 		for(let key in site.devices){site.counters.onsite++};
 		for(let key in site.ppanels){site.counters.onsite++};
-		for(let key in site.update){site.counters.update++};
-		for(let key in site.create){site.counters.create++};
-		for(let key in site.delete){site.counters.delete++};
+		for(let list in site.create){
+			for(let obj in site.create[list]){
+				site.counters.create++
+			};
+		};
+		for(let list in site.create){
+			for(let obj in site.update[list]){
+				site.counters.update++
+			};
+		};
+		for(let list in site.delete){
+			for(let obj in site.delete[list]){
+				site.counters.delete++
+			};
+		};
 		if(document.getElementsByClassName('counters').length){
 			document.getElementById('onsite').innerHTML=site.counters.onsite;
 			document.getElementById('create').innerHTML=site.counters.create;
@@ -912,6 +924,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 			document.getElementById('delete').innerHTML=site.counters.delete;
 		};
 	};
+	/*
 	function saveSite(){
 		let bodyObj={
 			action:'saveSite',
@@ -942,6 +955,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 			return str;
 		};
 	};
+	*/
 	/*
 	function getAttrs(object,attrs){
 		if(typeof attrs==='string'){attrs=attrs.split(',')};
