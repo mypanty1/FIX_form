@@ -83,6 +83,7 @@
 					document.getElementById('error').innerHTML='error setTask';
 				}).finally(function(){
 					document.getElementById(task_id+'_btn').removeAttribute('disabled');
+					document.location.reload();
 				});
 			};
 		</script>
