@@ -17,7 +17,7 @@
 					.task-id{grid-area:1/1/1/3;font-family:math;}
 					.task-time{grid-area:1/3/1/6;text-align:right;font-family:math;}
 					.task-address{grid-area:2/1/2/6;}
-					.task-descr{grid-area:3/1/3/6;font-family:math;display:none;}/*скрыто для отправки писем*/
+					.task-descr{grid-area:3/1/3/6;font-family:math;}
 					.task-action-counters{grid-area:4/1/4/6;font-family:math;display:none;}/*скрыто так-как муторно расчитывать, убраны из таблицы*/
 					.task-login{grid-area:5/1/5/3;}
 					.task-state{grid-area:5/3/5/5;}
@@ -35,12 +35,17 @@
 						<div class="task">
 							<div class="task-id">`+taskObj.task_id+`</div><div class="task-time">`+(new Date(taskObj.date_time).toLocaleString())+`</div>
 							<div class="task-address">`+taskObj.site_name+` `+taskObj.address+`</div>
-							<div class="task-descr">`+taskObj.description+`</div>
+							<textarea class="task-descr" type="text">`+taskObj.description+`</textarea>
 							<div class="task-action-counters">объекты: создать:[`+taskObj.num_create+`],&nbsp;править:[`+taskObj.num_update+`],&nbsp;удалить:[`+taskObj.num_delete+`];</div>
-							<select class="task-login"><option `+((taskObj.login_tech=='')?'selected':'')+` disabled>&nbsp;</option><option value="nyblino1" `+((taskObj.login_tech=='nyblino1')?'selected':'')+`>nyblino1</option><option value="avfrants" `+((taskObj.login_tech=='avfrants')?'selected':'')+`>avfrants</option><option value="mvdenis1" `+((taskObj.login_tech=='mvdenis1')?'selected':'')+`>mvdenis1</option><option value="mypanty1" `+((taskObj.login_tech=='mypanty1')?'selected':'')+`>mypanty1</option></select>
-							<select class="task-state"><option value="new" `+((taskObj.task_state=='new')?'selected':'')+`>новый</option><option value="start" `+((taskObj.task_state=='start')?'selected':'')+`>в работе</option><option value="reject">отклонил</option><option value="end">сделал</option></select>
+							<input class="task-login" type="text" value="`+taskObj.login_tech+`" placeholder="login_tech" name="login_tech" autocomplete="on">
+							<select class="task-state">
+								<option value="new" `+((taskObj.task_state=='new')?'selected':'')+`>новый</option>
+								<option value="start" `+((taskObj.task_state=='start')?'selected':'')+`>в работе</option>
+								<option value="end">готово</option>
+								<option value="reject">отклонить</option>
+							</select>
 							<button class="task-save" type="button">save</button>
-							<input class="task-reason" type="text" value="`+taskObj.reason+`" placeholder="решение">
+							`+((taskObj.task_state=='start')?(`<input class="task-reason" type="text" value="`+taskObj.reason+`" placeholder="решение">`):``)+`
 						</div>
 					`);
 				};
