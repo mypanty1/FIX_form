@@ -11,8 +11,11 @@
 			button[type="button"]{/*width:30px;*/height:20px;}
 				.header{}
 					.counter{}
+				.error{}
 				.tasks-list{display:flex;/*flex-direction:column;*/flex-flow:row wrap;}
 					.task{/*width:100%;*/width:300px;height:fit-content;display:grid;grid-template-columns:repeat(5,20%);border:2px solid #0074CA;margin:2px;}
+					.task.start{border: 2px solid #e7a74f;}
+					.task.start select{border:1px solid #e7a74f;}
 					.task>*{margin:3px 1px 1px 1px;}
 					.task-id{grid-area:1/1/1/3;font-family:math;}
 					.task-time{grid-area:1/3/1/6;text-align:right;font-family:math;}
@@ -27,30 +30,81 @@
 	</head>
 	<body>
 		<h2 class="header">Активные задачи:<span class="counter"></span></h2>
+		<div class="error" id="error"></div>
 		<div class="tasks-list"></div>
 		<script>
 			fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getTaskList&key=task_id').then(response=>response.json()).then(function(obj){
 				for(let taskObj of obj.task_list.filter(function(item){return item.task_state=='new'||item.task_state=='start'})){/*только активные*/
 					document.getElementsByClassName('tasks-list')[0].insertAdjacentHTML('afterBegin',`
-						<div class="task">
+						<div class="task `+taskObj.task_state+`" id="`+taskObj.task_id+`">
 							<div class="task-id">`+taskObj.task_id+`</div><div class="task-time">`+(new Date(taskObj.date_time).toLocaleString())+`</div>
 							<div class="task-address">`+taskObj.site_name+` `+taskObj.address+`</div>
 							<textarea class="task-descr" type="text" disabled>`+taskObj.description+`</textarea>
-							<div class="task-action-counters">объекты: создать:[`+taskObj.num_create+`],&nbsp;править:[`+taskObj.num_update+`],&nbsp;удалить:[`+taskObj.num_delete+`];</div>
-							<input class="task-login" type="text" value="`+taskObj.login_tech+`" placeholder="login" name="login_tech" autocomplete="username">
+							<div class="task-action-counters"></div>
+							<input class="task-login" type="text" value="`+taskObj.login_tech+`" placeholder="login_tech" name="login_tech" autocomplete="on">
 							<select class="task-state">
 								<option value="new" `+((taskObj.task_state=='new')?'selected':'')+`>новый</option>
 								<option value="start" `+((taskObj.task_state=='start')?'selected':'')+`>в работе</option>
 								<option value="end">готово</option>
 								<option value="reject">отклонить</option>
 							</select>
-							<button class="task-save" type="button">save</button>
+							<button class="task-save" type="button" id="`+taskObj.task_id+`_btn">save</button>
 							`+((taskObj.task_state=='start')?(`<input class="task-reason" type="text" value="`+taskObj.reason+`" placeholder="решение">`):``)+`
 						</div>
 					`);
+					document.getElementById(taskObj.task_id+'_btn').addEventListener('click',function(){setTask(taskObj.task_id)});
 				};
 				document.getElementsByClassName('counter')[0].insertAdjacentHTML('beforeEnd',document.getElementsByClassName('task').length);
+			}).catch(function(err){
+				console.log(err);
+				document.getElementById('error').innerHTML='error getTaskList';
+			}).finally(function(){
+				
 			});
+			function setTask(task_id){
+				document.getElementById(task_id+'_btn').setAttribute('disabled','disabled');
+				document.getElementById('error').innerHTML='';
+				fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec',{
+					'method':'POST',
+					'mode':'no-cors',
+					'headers':{'Content-Type':'application/json;charset=utf-8'},
+					'body':JSON.stringify({
+						'action':'setTask',
+						'task_id':task_id,
+						'state':document.getElementById('task_id').getElementsByClassName('task-state')[0].value,
+						'login':document.getElementById('task_id').getElementsByClassName('task-login')[0].value,
+						'reason':document.getElementById('task_id').getElementsByClassName('task-reason')[0].value,
+					})
+				})/*.then(response=>response.json())*/.then(function(obj){
+					console.log(obj);
+					document.getElementById('error').innerHTML='статус изменен';
+				}).catch(function(err){
+					console.log(err);
+					document.getElementById('error').innerHTML='error setTask';
+				}).finally(function(){
+					document.getElementById(task_id+'_btn').removeAttribute('disabled');
+				});
+			};
 		</script>
 	</body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
