@@ -76,9 +76,8 @@
 						'login':document.getElementById(task_id).getElementsByClassName('task-login')[0].value,
 						'reason':document.getElementById(task_id).getElementsByClassName('task-reason')[0].value,
 					})
-				})/*.then(response=>response.json())*/.then(function(obj){
+				}).then(function(obj){
 					console.log(obj);
-					document.getElementById('error').innerHTML='статус изменен';
 				}).catch(function(err){
 					console.log(err);
 					document.getElementById('error').innerHTML='error setTask';
