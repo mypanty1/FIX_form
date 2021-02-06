@@ -35,9 +35,9 @@
 						<div class="task">
 							<div class="task-id">`+taskObj.task_id+`</div><div class="task-time">`+(new Date(taskObj.date_time).toLocaleString())+`</div>
 							<div class="task-address">`+taskObj.site_name+` `+taskObj.address+`</div>
-							<textarea class="task-descr" type="text">`+taskObj.description+`</textarea>
+							<textarea class="task-descr" type="text" disabled>`+taskObj.description+`</textarea>
 							<div class="task-action-counters">объекты: создать:[`+taskObj.num_create+`],&nbsp;править:[`+taskObj.num_update+`],&nbsp;удалить:[`+taskObj.num_delete+`];</div>
-							<input class="task-login" type="text" value="`+taskObj.login_tech+`" placeholder="login_tech" name="login_tech" autocomplete="on">
+							<input class="task-login" type="text" value="`+taskObj.login_tech+`" placeholder="login" name="login_tech" autocomplete="username">
 							<select class="task-state">
 								<option value="new" `+((taskObj.task_state=='new')?'selected':'')+`>новый</option>
 								<option value="start" `+((taskObj.task_state=='start')?'selected':'')+`>в работе</option>
