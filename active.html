@@ -71,9 +71,9 @@
 					'body':JSON.stringify({
 						'action':'setTask',
 						'task_id':task_id,
-						'state':document.getElementById('task_id').getElementsByClassName('task-state')[0].value,
-						'login':document.getElementById('task_id').getElementsByClassName('task-login')[0].value,
-						'reason':document.getElementById('task_id').getElementsByClassName('task-reason')[0].value,
+						'state':document.getElementById(task_id).getElementsByClassName('task-state')[0].value,
+						'login':document.getElementById(task_id).getElementsByClassName('task-login')[0].value,
+						'reason':document.getElementById(task_id).getElementsByClassName('task-reason')[0].value,
 					})
 				})/*.then(response=>response.json())*/.then(function(obj){
 					console.log(obj);
