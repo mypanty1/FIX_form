@@ -39,10 +39,10 @@
 					document.getElementsByClassName('tasks-list')[0].insertAdjacentHTML('afterBegin',`
 						<div class="task `+taskObj.task_state+`" id="`+taskObj.task_id+`">
 							<div class="task-id">`+taskObj.task_id+`</div><div class="task-time">`+(new Date(taskObj.date_time).toLocaleString())+`</div>
-							<div class="task-address">`+taskObj.site_name+` `+taskObj.address+`</div>
+							<div class="task-address">`+taskObj.address+`</div>
 							<textarea class="task-descr" type="text" disabled>`+taskObj.description+`</textarea>
 							<div class="task-action-counters"></div>
-							<input class="task-login" type="text" value="`+taskObj.login_tech+`" placeholder="login_tech" name="login_tech" autocomplete="on">
+							<input class="task-login" type="text" value="`+taskObj.login_tech+`" placeholder="login_tech">
 							<select class="task-state">
 								<option value="new" `+((taskObj.task_state=='new')?'selected':'')+`>новый</option>
 								<option value="start" `+((taskObj.task_state=='start')?'selected':'')+`>в работе</option>
@@ -58,7 +58,7 @@
 				document.getElementsByClassName('counter')[0].insertAdjacentHTML('beforeEnd',document.getElementsByClassName('task').length);
 			}).catch(function(err){
 				console.log(err);
-				document.getElementById('error').innerHTML='error getTaskList';
+				document.getElementById('error').innerHTML='error: getTaskList';
 			}).finally(function(){
 				
 			});
@@ -80,7 +80,7 @@
 					console.log(obj);
 				}).catch(function(err){
 					console.log(err);
-					document.getElementById('error').innerHTML='error setTask';
+					document.getElementById('error').innerHTML='error: setTask';
 				}).finally(function(){
 					document.getElementById(task_id+'_btn').removeAttribute('disabled');
 					document.location.reload();

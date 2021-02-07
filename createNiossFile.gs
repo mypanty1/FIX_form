@@ -2,10 +2,10 @@ function createNiossFile(event,new_file_name,jsonObj){/*создать копи�
 	let task_files=DriveApp.getFolderById('1jjD3bAffmSFTclWq--ZgZAQW0PorbJFs');/*task_files*/
 	let nioss_template=DriveApp.getFileById('1sSos0uTs-5ljIK3_PsoBYODCTOmC2lx_rYEVEq4r-bU');/*NIOSS_template*/
 	let new_file_id=nioss_template.makeCopy(new_file_name,task_files).getId();
-  let new_file=SpreadsheetApp.openById(new_file_id);
+	let new_file=SpreadsheetApp.openById(new_file_id);
 	for(let key in jsonObj){/*перебор объектов*/
 		let obj=jsonObj[key];
-		let new_file_list=new_file.getSheetByName((obj.original)?(obj.original.sheet):(obj.variation)?(obj.variation.sheet):'unknown');
+		let new_file_list=new_file.getSheetByName(obj.original.sheet||obj.variation.sheet);
 		new_file_list.appendRow([
 			event.parameter.site_id,
 			'',
@@ -37,6 +37,6 @@ function createNiossFile(event,new_file_name,jsonObj){/*создать копи�
 			};
 		};
 	};
-  DriveApp.getFileById(new_file_id).setSharing(DriveApp.Access.ANYONE_WITH_LINK,DriveApp.Permission.VIEW);/*права*/
+	DriveApp.getFileById(new_file_id).setSharing(DriveApp.Access.ANYONE_WITH_LINK,DriveApp.Permission.VIEW);/*права*/
 	return new_file_id;
 };
