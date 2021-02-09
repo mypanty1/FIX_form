@@ -11,7 +11,7 @@
 			button[type="button"]{/*width:30px;*/height:20px;}
 				.header{}
 					.counter{}
-				.error{}
+				.error{margin-bottom:1em;color:crimson;font-weight:bold;}
 				.tasks-list{display:flex;/*flex-direction:column;*/flex-flow:row wrap;}
 					.task{/*width:100%;*/width:300px;height:fit-content;display:grid;grid-template-columns:repeat(5,20%);border:2px solid #0074CA;margin:2px;}
 					.task.start{border: 2px solid #e7a74f;}
@@ -60,7 +60,14 @@
 				console.log(err);
 				document.getElementById('error').innerHTML='error: getTaskList';
 			}).finally(function(){
-				
+				fetch('https://script.google.com/macros/s/AKfycbwIPhtGGK5M-2TmJDRZvkkdPTq-WZwQ3RLIWEOEhlE61T8SDiZG6CWiMQ/exec?action=getQuota').then(response=>response.json()).then(function(obj){
+					if(!obj.remaining||obj.remaining<10){document.getElementById('error').innerHTML='Remaining daily email quota: '+obj.remaining};
+				}).catch(function(err){
+					console.log(err);
+					document.getElementById('error').innerHTML='error: getQuota';
+				}).finally(function(){
+					
+				});
 			});
 			function setTask(task_id){
 				document.getElementById(task_id+'_btn').setAttribute('disabled','disabled');
@@ -77,7 +84,7 @@
 						'reason':document.getElementById(task_id).getElementsByClassName('task-reason')[0].value,
 					})
 				}).then(function(obj){
-					console.log(obj);
+					document.getElementById('error').innerHTML='';
 				}).catch(function(err){
 					console.log(err);
 					document.getElementById('error').innerHTML='error: setTask';
