@@ -38,7 +38,7 @@ javascript:(function(){if(document.title!='FIX_form_js.v1'&&(window.location.hre
 		.tile{/*для удаления плиток*/}
 		.loader-line{width:100%;height:1em;background-color:#35a6dc;background-image:linear-gradient(45deg,rgba(255,255,255,0.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,0.15) 50%,rgba(255,255,255,0.15) 75%,transparent 75%,transparent);background-size:1rem 1rem;animation:progress-bar-stripes 1s linear infinite;}
 		@keyframes progress-bar-stripes{from{background-position:1rem 0}to{background-position:0 0}}
-		..tile-warning{background-color:#fee;}
+		.tile-warning{background-color:#fee;}
 		.tile-select{background-color:#fed;}
 		.tile-task{background-color:#fff;}
 		.task-new{background-color:aliceblue;}
